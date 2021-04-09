@@ -2,6 +2,8 @@ package test1
 
 import (
 	"log"
+	"sync"
+	"time"
 	"unsafe"
 )
 
@@ -39,9 +41,10 @@ func MapTest() {
 
 	m0 := make(map[string]int)
 
-	for i := 0; i < 10; i++ {
-		m0[string('a'+i)] = i
-	}
+	// for i := 0; i < 10; i++ {
+	// 	m0[string('a'+i)] = i
+	// }
+
 	// map 的读取时乱序的
 	for k, v := range m0 {
 		log.Println(k, ":", v)
@@ -92,4 +95,89 @@ func MapTest() {
 		log.Println(k, v)
 	}
 
+}
+
+/*
+	map的并发测试，map不可以并发进行读写操作，
+	某个任务正在对map进行*写*操作，那么其他任务就不可以对该map进行*读写*操作
+	跑出异常：fatal error: concurrent map read and map write
+*/
+func ConcurrentTest() {
+	m := make(map[string]int)
+	// 并行执行匿名函数，不断的向map写入
+	go func() {
+		for {
+			m["a"] += 1 // 写
+			log.Println("Write: ", m["a"])
+			time.Sleep(time.Millisecond)
+		}
+	}()
+
+	// 并行执行匿名函数，不断的从map读取
+	go func() {
+		for {
+			_ = m["b"] // 读
+			log.Println("Read: ", m["a"])
+			time.Sleep(time.Millisecond)
+		}
+	}()
+
+	// 阻止进程退出
+	select {}
+}
+
+/*
+	利用sync.RWMutex实现同步，
+	保证在同一时间内不会右多个任务同时对map进行读写操作
+*/
+func ConcurrentMutexTest() {
+	// 使用读写锁以获得最佳性能
+	var lock sync.RWMutex
+	// 定义个map
+	m := make(map[string]int)
+
+	// 写
+	go func() {
+		for {
+			lock.Lock()
+			m["a"] += 1
+			log.Println("Write: ", m["a"])
+			lock.Unlock()
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	// 读
+	go func() {
+		for {
+			lock.Lock()
+			log.Println("Read: ", m["a"])
+			lock.Unlock()
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	// 阻止进程退出
+	select {}
+}
+
+/*
+	性能比对，预留空间和不预留空间的区别
+*/
+// map 不预先准备足够的空间情况
+func Performance1Test() {
+	m1 := make(map[int]int)
+	for i := 0; i < 1000; i++ {
+		m1[i] = i
+	}
+}
+
+// map 预先准备1000容量情况
+func Performance2Test() {
+	m2 := make(map[int]int, 1000)
+	for i := 0; i < 1000; i++ {
+		m2[i] = i
+	}
 }
