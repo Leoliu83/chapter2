@@ -35,5 +35,8 @@ func main() {
 	// test1.AnonymousFiledTest()
 	// test1.StructTagTest()
 	// test1.StructMemoryTest()
-	test1.StructMemoryAlgnment()
+	// test1.StructMemoryAlgnment()
+	// test1.MethodTest()
+	// test1.MethodAsParamReceiverIsValueTest()
+	test1.MethodAsParamReceiverIsPointerTest()
 }

@@ -7,7 +7,12 @@ package test1
 		·字典（map）
 		·通道（channel）
 */
-
+/*
+	如何将go文件编译成object file:
+		go tool compile xxx.go
+	如何查看汇编(object file)：
+		go tool objdump xxx.o // go file无效
+*/
 /*
 	banchmark 结果说明
 	e.g.：

@@ -125,6 +125,8 @@ func StructCompareTest() {
 	println(n5 == n6)
 	println(n5 == n7)
 
+	// 增加打印，不显示unused告警
+	log.Printf("%+v", cannotcomp{id: 1, m: map[int]int{1: 1, 2: 2}})
 	/*
 		// cannot compare n8 == n9 (operator == not defined for cannotcomp)
 		n8 := cannotcomp{
@@ -253,15 +255,17 @@ func AnonymousFiledTest() {
 	}
 	log.Printf("nd.int: %d, nd: %#v", *nd.int, nd)
 
-	type a *int
-	type b **int
+	// type a *int
+	// type b **int
 	type c interface{}
 	type d []int64
 
 	type s struct {
-		// a // 不可以是指针的指针
+		// a // 不可以是指针
+		// *a // 不可以是指针的指针
 		// b  // 同上
 		// *c // 不可以是接口的指针
+		c // 可以是接口
 		// []int64 // 不可以是slice，也不可以使别名，因为slice是未命名类型
 		d       // 通过type 将slice变为了命名类型，就可以使用了
 		Command string
@@ -269,7 +273,11 @@ func AnonymousFiledTest() {
 		*log.Logger
 	}
 	// 初始化后便可以直接使用 Pringln 进行打印
-	s1 := &s{Command: "test", Logger: log.New(os.Stderr, "Job: ", log.Ldate)}
+	s1 := &s{d: []int64{1, 2, 3},
+		c:       struct{}{},
+		Command: "test",
+		Logger:  log.New(os.Stderr, "Job: ", log.Ldate),
+	}
 	s1.Println("123...")
 	// s1.Printf("%+v \n", s1.d)
 
@@ -304,6 +312,7 @@ func AnonymousFiledTest() {
 	nu.address.name = "Address" // name 重名，因此需要显示字段名
 	nu.address.no = "002"       // 与icard中的no重名，因此需要显示字段名
 	nu.idcard.no = "0x123123123"
+	nu.idcard.cname = "Leo"
 	log.Printf("%+v", nu)
 
 }
@@ -336,6 +345,7 @@ func StructTagTest() {
 	st := stag{
 		x:   1,
 		y:   2,
+		z:   1,
 		sum: 1 + 2,
 	}
 	log.Printf("st: %#v", st)
@@ -426,7 +436,15 @@ func StructMemoryTest() {
 */
 func StructMemoryAlgnment() {
 	/*
-		a + b = 4 byte
+		1. golang中内存以最长的*基础类型*宽度为标准。
+		   基础类型：例如 string由指向底层数组的指针和标识长度的int组成，
+		   基础类型就是指针（8 byte），长度（8 byte），所以string的对齐值是8 byte而不是16 byte
+		2. golang的struct属性将小长度属性进行合并来对齐最长长度
+		例如（用#代表对齐补位）：
+		// b与c靠的最近，因此在b后补00来增加2 byte，最终与c(4 byte)对齐=> a(1 byte)+b(1 byte)+补位(2 byte)
+		a = 1 byte
+		b = 1 byte
+		# = 2 byte
 		c = 4 byte
 		all: 8 byte
 		+-----+--------+----------+
@@ -438,6 +456,13 @@ func StructMemoryAlgnment() {
 		a byte
 		b byte
 		c int32 // 对齐宽度4
+	}{}
+	// v1 和 v11 只是属性换了位置，但从打印可以看出，v11占用内存是12字节：a(4 byet)+c(4 byte)+b(4 byte)
+	// 因为无法将相邻的两个小长度属性进行合并对齐，导致了内存的增长，因此在设计struct时，可以从小字节属性写到大字节属性，以便优化struct内存
+	v11 := struct {
+		a byte
+		c int32 // 对齐宽度4
+		b byte
 	}{}
 
 	v2 := struct {
@@ -451,6 +476,7 @@ func StructMemoryAlgnment() {
 		c byte
 	}{}
 
+	// i(8 byte) => a(1 byte) + b(1 byte) + c(1 byte) + d(1 byte) + e(1 byte) + f(1 byte) + g(1 byte) + h(1 byte)
 	v4 := struct {
 		a byte
 		b byte
@@ -463,7 +489,8 @@ func StructMemoryAlgnment() {
 		i []int // 基础类型 int，对齐宽度8｛point，len，cap｝
 	}{}
 
-	log.Printf("v1 algn: %d, v2 algn: %d,v3 algn: %d", unsafe.Alignof(v1), unsafe.Alignof(v2), unsafe.Alignof(v3))
+	log.Printf("v1 algn: %d, v2 algn: %d,v3 algn: %d",
+		unsafe.Alignof(v1), unsafe.Alignof(v2), unsafe.Alignof(v3))
 	log.Printf(`[v1] algn: %d,size of [v1]: %d, address of [v1]: %p, 
 		size of [v1.a]: %d, address of [v1.a]: %p,  
 		size of [v1.b]: %d, address of [v1.b]: %p,  
@@ -472,6 +499,14 @@ func StructMemoryAlgnment() {
 		unsafe.Sizeof(v1.a), &v1.a,
 		unsafe.Sizeof(v1.b), &v1.b,
 		unsafe.Sizeof(v1.c), &v1.c)
+	log.Printf(`[v11] algn: %d,size of [v11]: %d, address of [v11]: %p, 
+		size of [v11.a]: %d, address of [v11.a]: %p,  
+		size of [v11.b]: %d, address of [v11.b]: %p,  
+		size of [v11.c]: %d, address of [v11.c]: %p`,
+		unsafe.Alignof(v11), unsafe.Sizeof(v11), &v11,
+		unsafe.Sizeof(v11.a), &v11.a,
+		unsafe.Sizeof(v11.b), &v11.b,
+		unsafe.Sizeof(v11.c), &v11.c)
 	log.Printf(`[v2] algn: %d,size of [v2]: %d, address of [v2]: %p, 
 		size of [v2.a]: %d, address of [v2.a]: %p,  
 		size of [v2.b]: %d, address of [v2.b]: %p`,
@@ -509,5 +544,37 @@ func StructMemoryAlgnment() {
 		unsafe.Sizeof(v4.g), &v4.g,
 		unsafe.Sizeof(v4.h), &v4.h,
 		unsafe.Sizeof(v4.i), &v4.i,
+	)
+
+	/*
+		空结构体属性, 如果空结构体在最后一个字段，
+		那么编译器会将其作为长度为1的类型做对齐处理, 以便其地址不会越界, 避免引发垃圾回收错误
+		v5 长度为  a(0 byte)+b(8 byte)+c(8 byte)
+		c 视为长度为1的属性（例如 byte），对齐至8
+	*/
+	var v5 = struct {
+		a struct{} // 长度为0 不对齐
+		b int      // 长度为8
+		c struct{} // 视为长度为1的属性（例如 byte），对齐至8
+	}{}
+	log.Printf(`[v5] algn: %d,size of [v5]: %d, address of [v1]: %p, 
+		size of [v5.a]: %d, address of [v5.a]: %p, offset [v5.a]: %d,
+		size of [v5.b]: %d, address of [v5.b]: %p, offset [v5.b]: %d,
+		size of [v5.c]: %d, address of [v5.c]: %p, offset [v5.c]: %d
+		`,
+		unsafe.Alignof(v5), unsafe.Sizeof(v5), &v5,
+		unsafe.Sizeof(v5.a), &v5.a, unsafe.Offsetof(v5.a),
+		unsafe.Sizeof(v5.b), &v5.b, unsafe.Offsetof(v5.b),
+		unsafe.Sizeof(v5.c), &v5.c, unsafe.Offsetof(v5.c))
+	/*
+		如果只有一个空结构体，则同样按1对齐，但长度为0，且指向runtime.zerobase
+	*/
+	var v6 = struct {
+		a struct{} // 视为长度为1的属性（例如 byte）
+	}{}
+	log.Printf(`[v6] algn: %d,size of [v6]: %d, address of [v6]: %p, 
+		size of [v6.a]: %d, address of [v6.a]: %p, offset [v6.a]: %d`,
+		unsafe.Alignof(v6), unsafe.Sizeof(v6), &v6,
+		unsafe.Sizeof(v6.a), &v6.a, unsafe.Offsetof(v6.a),
 	)
 }
