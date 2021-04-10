@@ -89,6 +89,25 @@ const (
 
 // ChkConst is used for checking const variables
 func ChkConst() {
+	fmt.Println("a1=", a1, reflect.TypeOf(a1))
+	fmt.Println("a2=", a2, reflect.TypeOf(a2))
+	fmt.Println("a3=", a3, reflect.TypeOf(a3))
+
+	fmt.Println("b1=", b1, reflect.TypeOf(b1))
+	fmt.Println("b2=", b2, reflect.TypeOf(b2))
+	fmt.Println("b3=", b3, reflect.TypeOf(b3))
+
+	fmt.Println("c1=", c1, reflect.TypeOf(c1))
+	fmt.Println("c2=", c2, reflect.TypeOf(c2))
+	fmt.Println("c3=", c3, reflect.TypeOf(c3))
+
+	fmt.Println("d1=", d1, reflect.TypeOf(d1))
+	fmt.Println("d2=", d2, reflect.TypeOf(d2))
+	fmt.Println("d3=", d3, reflect.TypeOf(d3))
+	fmt.Println("d4=", d4, reflect.TypeOf(d4))
+	fmt.Println("d5=", d5, reflect.TypeOf(d5))
+	fmt.Println("d6=", d6, reflect.TypeOf(d6))
+
 	fmt.Println("a=", a, reflect.TypeOf(a))
 	fmt.Println("b=", b, reflect.TypeOf(b))
 	fmt.Println("c=", c, reflect.TypeOf(c))

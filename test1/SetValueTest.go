@@ -12,6 +12,7 @@ var y = false // 自动推断为boolean类型变量
 // go语言中首字母大写函数表示public，外部可以调用，首字母小写函数为private函数，外部不可见
 func VariableExample() {
 	fmt.Println("Hello world!")
+	fmt.Printf("Type of y: %T \n", y)
 	fmt.Println("x=", &x, x)
 	// = 表示赋值，如果变量未定义，会产生错误
 	x = 100
@@ -34,9 +35,14 @@ func VariableExample() {
 	fmt.Println("a=", &z1, z1)
 
 	f, err := os.Open("D:\\Users\\liubin18\\Desktop\\Test.java")
+	if err != nil {
+		fmt.Printf("Open file error: %s", err.Error())
+		os.Exit(1)
+	}
 	buf := make([]byte, 1024)
 	// err 退化为赋值，n为新变量
 	n, err := f.Read(buf)
 	fmt.Println(err)
 	fmt.Println(n)
+	f.Close()
 }

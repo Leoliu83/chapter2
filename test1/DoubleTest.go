@@ -15,8 +15,7 @@ func DoubleTest() {
 	fmt.Println(a == b, b == c, a == c)
 
 	// 类型转换
-	var d float64
-	d = float64(c) // go 语言要求强制的显示类型转换
+	var d float64 = float64(c) // go 语言要求强制的显示类型转换
 	fmt.Printf("%v", d)
 
 	p := 123456
