@@ -7,6 +7,9 @@ import (
 	"unsafe"
 )
 
+/*
+	字典类型（Map）不支持比较操作，类型相同也不行，只能与nil进行比较。
+*/
 type User struct {
 	age  int
 	name string
@@ -127,7 +130,7 @@ func ConcurrentTest() {
 
 /*
 	利用sync.RWMutex实现同步，
-	保证在同一时间内不会右多个任务同时对map进行读写操作
+	保证在同一时间内不会有多个任务同时对map进行读写操作
 */
 func ConcurrentMutexTest() {
 	// 使用读写锁以获得最佳性能
@@ -179,4 +182,16 @@ func Performance2Test() {
 	for i := 0; i < 1000; i++ {
 		m2[i] = i
 	}
+}
+
+func MapCompareTest() {
+	var m1 map[string]int
+	var m2 map[string]int
+	println(m1 == nil, m2 == nil)
+	// println(m1 == m2) // error:cannot compare m1 == m2 (operator == not defined for map[string]int)
+	m1 = map[string]int{}
+	m2 = map[string]int{}
+	// println(m1 == m2) // error:cannot compare m1 == m2 (operator == not defined for map[string]int)
+	println(m1 == nil)
+	println(m2 == nil)
 }

@@ -105,6 +105,7 @@ func StructTest() {
 }
 
 // 只有所有属性都支持比较才可以进行比较
+// slice，map和function都不支持比较
 func StructCompareTest() {
 	// 比较
 	n5 := MixedFractions{

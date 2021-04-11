@@ -23,6 +23,7 @@ func main() {
 	// test1.FuncTest()
 	// test1.InterfaceTest()
 	// test1.MapTest()
+	// test1.MapCompareTest()
 	// test1.SliceTest()
 	// test1.StrConvTest()
 	// test1.DoubleTest()
@@ -38,5 +39,8 @@ func main() {
 	// test1.StructMemoryAlgnment()
 	// test1.MethodTest()
 	// test1.MethodAsParamReceiverIsValueTest()
-	test1.MethodAsParamReceiverIsPointerTest()
+	// test1.MethodAsParamReceiverIsPointerTest()
+	// test1.InterfaceTest()
+	// test1.InterfaceInternalTest()
+	test1.NilInterfaceTest()
 }
