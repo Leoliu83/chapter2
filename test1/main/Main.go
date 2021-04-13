@@ -10,6 +10,12 @@ import (
 
 /**
   只有在package main下的main函数才可以运行
+  如果需要为最终的可执行文件添加命令行参数，可以使用 flag 包
+  os.Args 是一个string切片，用于存储所有的命令行参数
+  查看所有参数方法：
+  for i,v := range os.Args {
+	  log.Pringf("args[%v] = %v", i, v)
+  }
 */
 func main() {
 	// VariableExample 函数在 chapter2/test1/run.go 中
@@ -21,6 +27,7 @@ func main() {
 	// test1.PointTest()
 	// test1.StructTest()
 	// test1.FuncTest()
+	test1.FuncSignatureTest()
 	// test1.InterfaceTest()
 	// test1.MapTest()
 	// test1.MapCompareTest()
@@ -42,5 +49,6 @@ func main() {
 	// test1.MethodAsParamReceiverIsPointerTest()
 	// test1.InterfaceTest()
 	// test1.InterfaceInternalTest()
-	test1.NilInterfaceTest()
+	// test1.NilInterfaceTest()
+	// test1.InterfaceTypeTransform()
 }

@@ -145,6 +145,8 @@ func DeferTest() {
 
 /*
 	如果不使用 FormatString 命令，则 Format参数签名将长到没法看
+	type xxx func(a,b) (c,d) 表达式表示“函数签名”
+	如果两个函数的“函数签名”相同，那么表示这两个函数的函数的函数名，参数和返回值(类型，个数，顺序)都相同。
 */
 type FormatString func(string, ...interface{}) (string error)
 
@@ -227,4 +229,58 @@ func ReturnTest(a int, b int) (total int, average int) {
 	}
 
 	// return
+}
+
+/*
+	函数签名：就是表示了函数的 出参，入参的类型和数量
+	可以利用函数签名来实现 函数泛型
+*/
+func FuncSignatureTest() {
+	// := 号的左边（add）是函数变量，右边是函数字面值
+	add := func(x, y int) int { return x + y }
+	x := mathCalc(1, 2, add)
+	log.Printf("计算结果是：%d", x)
+	minus := func(x, y int) int { return x - y }
+	x = mathCalc(1, 2, Caculater(minus))
+	log.Printf("计算结果是：%d", x)
+	/*
+		// 不符合函数签名的，会产生编译错误
+		add1 := func(x, y, z int) int { return x + y + z }
+		x := mathCalc(1, 2, add1)
+	*/
+	// 使用了函数签名Caculater强转的函数，就自动实现了 icalcer 的方法
+	imathCalc(1, 2, Caculater(add))
+}
+
+// 定义一个接口，接口中有两个方法
+type icalcer interface {
+	caculate(int, int) int
+}
+
+// 定义一个函数签名，表示函数有两个int入参和一个int出参
+type Caculater func(int, int) int
+
+// Caculater 绑定一个方法叫 caculate
+func (c Caculater) caculate(a int, b int) int {
+	return c(a, b)
+}
+
+/*
+	函数签名的应用1
+	下面是一个数学计算使用的通用方法
+	c Caculater 就变成了一个泛型，只要符合 Caculater 函数签名格式的函数都可以作为参数
+	例如，写个 add(a int,b int) int 或者  minus(a int,b int) int 都可以作为参数
+	这样就提高了灵活性，比如本来是用加法计算的，我现在想换成减法，就不需要改动 mathCalc 中的代码，只需要新写一个minus方法，并作为参数即可
+	又例如 c Caculater 是一个加密算法的函数签名格式，那么 我现在用的是 加密方法a 想换成b 直接将b作为参数传递即可
+*/
+func mathCalc(a int, b int, c Caculater) int {
+	return c(a, b)
+}
+
+/*
+	函数签名的应用2
+	如果使用了函数签名Caculater强转的函数，就自动实现了 icalcer 的方法
+*/
+func imathCalc(a int, b int, c icalcer) int {
+	return c.caculate(a, b)
 }

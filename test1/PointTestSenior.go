@@ -115,13 +115,13 @@ func PointTestSenior() {
 	log.Println("======================================================================================")
 	log.Printf("--->变量[mGraph2]的类型: type: %T \n", mGraph2)
 	log.Printf("--->指针变量[mGraph2]的内存地址: %p \n", &mGraph2)
-	// log.Printf("--->指针变量[mGraph2]的真实内存地址: %p \n", mGraph2) // warning 说明mg是一个普通变量，只是一个别名
+	// log.Printf("--->指针变量[mGraph2]的真实内存地址: %p \n", mGraph2) // warning 说明mg是不可寻址的，只是一个别名
 	log.Printf("--->变量[mGraph2]的值: %+v \n", mGraph2)
 	// log.Printf("--->变量[mGraph2]的真实值: %+v \n", *mGraph2) // error
 	AddNode(mGraph2, "3")
 	log.Printf("--->(AddNode()执行后)变量[mGraph2]的类型: type: %T \n", mGraph2)
 	log.Printf("--->(AddNode()执行后)指针变量[mGraph2]的内存地址: %p \n", &mGraph2)
-	// log.Printf("--->(AddNode()执行后)指针变量[mGraph2]的真实内存地址: %p \n", mGraph2) // warning 说明mg是一个普通变量，只是一个别名
+	// log.Printf("--->(AddNode()执行后)指针变量[mGraph2]的真实内存地址: %p \n", mGraph2) // warning 说明mg是不可寻址的，只是一个别名
 	log.Printf("--->(AddNode()执行后)变量[mGraph2]的值: %+v \n", mGraph2)
 	// log.Printf("--->(AddNode()执行后)变量[mGraph2]的真实值: %+v \n", *mGraph2) // error
 	AddNode2(&mGraph2, "4")

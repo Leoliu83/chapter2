@@ -165,11 +165,101 @@ func NilInterfaceTest() {
 	}
 }
 
-// TODO 未完成
+/*
+	golang 接口类型推断
+		表达式：x.(T)
+		该表达式有两种解释：
+			·T如果*不是*一个接口类型，那么表示断言 x 的动态类型与 T 类型相同
+			·T如果*是*一个接口类型，那么表示断言 x 的动态类型实现了接口 T
+	type switch:
+		type switch是利用switch语法来比较变量的动态类型 x.(type) 为固定写法，
+		它由一个特殊的switch表达式标记，它具有使用保留字类型而不是实际类型的类型断言形式。
+		表达式：
+			switch x.(type) {
+			case int :
+				xxx
+			case double :
+				xxx
+			}
+	编译器可以检查类型,下面代码将产生编译错误：cannot use x(0) (constant 0 of type x) as fmt.Stringer value in variable declaration: missing method String
+	type x int
+
+	func init() {
+		var _ fmt.Stringer = x(0)
+	}
+
+*/
+
 func InterfaceTypeTransform() {
+	// 一定要放在最上面
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("Catch error: ", err)
+		}
+	}()
+
+	var sth sth73 = 1
+	var x interface{} = sth
+	log.Printf("%T", x)
+	// var n fmt.Stringer
+	// n = fmt.Stringer(x)
+	// ok-idiom 模式
+	if n1, ok := x.(fmt.Stringer); ok { // 转换为更具体的接口类型（非原始类型）
+		log.Printf("n1: %T, x: %T", n1, x)
+	}
+	if sth1, ok := x.(sth73); ok { // 转换为原始类型
+		log.Printf("sth1: %T, x: %T", sth1, x)
+	}
+	// ok-idiom 模式 不会引发异常
+	if sth2, ok := x.(error); ok { // 转换为原始类型
+		log.Println(sth2)
+	} else {
+		log.Println("not ok")
+	}
+	// 不适用 ok-idiom 模式，直接引发异常：panic: interface conversion: test1.sth73 is not error
+	// e := x.(error)
+	// log.Println(e)
+
+	// type switch 做类型断言
+	switch v := x.(type) {
+	case fmt.Stringer:
+		log.Printf("v(fmt.Stringer): %T", v)
+		// fallthrough // type switch 不支持 fallthrough
+	case sth73:
+		log.Printf("v(sth73): %T", v)
+	default:
+		log.Printf("v(?): %T", v)
+	}
+
+	// 小技巧 ???????
+	/*
+		func() string 是一个匿名函数，无参数，返回一个string
+		Func73 是一个 函数签名，它定义了函数的 参数，返回值个数及类型
+		Func73(func() string { return "niub" }) 表示将匿名函数类型强转成Func73签名所定义的类型
+		注意：
+			·匿名函数的参数，返回值个数及类型必须与Func73的函数签名保持一致，否则编译错误
+			有点像 java中 Func73是定义的一个接口，而匿名函数则是一个具体的实现，函数签名必须保持一致
+
+	*/
+	var t fmt.Stringer = Func73(func() string { // 转换类型，使其实现 Stringer接口
+		return "niub"
+	})
+	log.Printf("t: %s", t.String())
+	log.Printf("t: %T", t)
 
 }
 
+/*-------------- 定义函数签名接口 ------------------*/
+// 函数签名，详见 FuncTest.go
+// 定义一个函数签名，名为：Func73
+type Func73 func() string
+
+// 为该签名定义一个方法 String() string
+func (f Func73) String() string {
+	return f()
+}
+
+/*-------------------------------------------------------------*/
 /*-------------- 自定义error并且实现error接口 ------------------*/
 type TestError struct{}
 
@@ -267,4 +357,15 @@ type anonymous struct {
 	data interface {
 		string() string
 	}
+}
+
+// sth73 实现 fmt.Stringer 接口的String()方法
+type sth73 int
+
+func (d sth73) String() string {
+	return fmt.Sprintf("sth73 String():%d", d)
+}
+
+func (d sth73) test() {
+	fmt.Printf("sth73 test():%d", d)
 }
