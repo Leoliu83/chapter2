@@ -124,7 +124,12 @@ func ConcurrentTest() {
 		}
 	}()
 
-	// 阻止进程退出
+	/*
+		阻止主进程退出
+		select 是 Go 中的一个控制结构，类似于用于通信的 switch 语句。每个 case 必须是一个通信操作，要么是发送要么是接收。
+		select 随机执行一个可运行的 case。如果没有 case 可运行，它将阻塞，直到有 case 可运行。一个默认的子句应该总是可运行的。
+		fatal error: all goroutines are asleep - deadlock! 异常暂时不需要关注
+	*/
 	select {}
 }
 

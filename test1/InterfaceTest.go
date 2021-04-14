@@ -96,7 +96,7 @@ func InterfaceInternalTest() {
 	log.Printf("variabel[d] type: %T, address: %p, value: %+v", d, &d, d)
 	log.Printf("variabel[t1] type: %T, address: %p, value: %+v", t, &t, t)
 	// 下一个打印会产生一个告警，由于 t.(outdata) 是不可寻址的，因此 %p 会产生告警
-	log.Printf("variabel[t.(outdata)] address: %p, value: %+v", t.(outdata), t.(outdata))
+	// log.Printf("variabel[t.(outdata)] address: %p, value: %+v", t.(outdata), t.(outdata))
 	// 解决办法就是把对象的指针赋值给接口变量，这样接口变量中就保存的是指针的副本
 	log.Println("------------------------ use pointer ----------------------------")
 	var t1 interface{} = &d

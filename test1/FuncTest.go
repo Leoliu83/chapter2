@@ -32,7 +32,6 @@ package test1
 	是否需要对原有对象状态进行修改，需要按具体情况具体分析。
 */
 import (
-	"fmt"
 	"log"
 	"unsafe"
 )
@@ -49,7 +48,7 @@ type MultiCalculate struct {
 }
 
 var add Calculate = func(x, y int32) int32 {
-	fmt.Printf("%d + %d = %d \n", x, y, x+y)
+	log.Printf("%d + %d = %d \n", x, y, x+y)
 	return x + y
 }
 
@@ -59,7 +58,7 @@ func run(c Calculate, x int32, y int32) {
 
 // FuncTest 方法用于测试函数类型
 func FuncTest() {
-	fmt.Printf("%T,%d \n", add, unsafe.Sizeof(add))
+	log.Printf("%T,%d \n", add, unsafe.Sizeof(add))
 	run(add, 5, 6)
 
 	mc := MultiCalculate{
@@ -70,8 +69,8 @@ func FuncTest() {
 			return a - b
 		},
 	}
-	fmt.Printf("a + b = %d \n", mc.Add(1, 2))
-	fmt.Printf("a - b = %d \n", mc.Minus(1, 2))
+	log.Printf("a + b = %d \n", mc.Add(1, 2))
+	log.Printf("a - b = %d \n", mc.Minus(1, 2))
 	ClosureTest()
 	DeferTest()
 }
@@ -88,22 +87,22 @@ func FuncTest() {
 	函数中如果存在defer，那么defer执行的时机是在第一步和第二步之间
 */
 func ClosureFunc(x int) (func(), []func()) {
-	fmt.Printf("outter -> x -> %p \n", &x)
+	log.Printf("outter -> x -> %p \n", &x)
 	var s []func()
 	// for循环的i是复用的，因此i的地址永远是一个不变
 	for i := 0; i < 3; i++ {
-		fmt.Printf("for -> i -> %p \n", &i)
+		log.Printf("for -> i -> %p \n", &i)
 		// x每次都会分配一个新的地址来放值，如果不使用x 返回的函数列表中的函数所调用的i都将为最终值
 		j := i
 		s = append(s, func() {
 			x += i
-			fmt.Printf("i -> %p,%d \n", &i, i)
-			fmt.Printf("j -> %p,%d \n", &j, j)
-			fmt.Printf("x -> %p,%d \n", &x, x)
+			log.Printf("i -> %p,%d \n", &i, i)
+			log.Printf("j -> %p,%d \n", &j, j)
+			log.Printf("x -> %p,%d \n", &x, x)
 		})
 	}
 	return func() {
-		fmt.Println(x)
+		log.Println(x)
 	}, s
 }
 
@@ -126,21 +125,45 @@ func ClosureTest() {
 	(x int) 是带命名返回值
 */
 func DeferFunc() (x int) {
-	defer fmt.Printf("defer1: x->[%p,%d] \n", &x, x)
+	defer log.Printf("defer1: x->[%p,%d] \n", &x, x)
 	// 匿名函数作用域被隔离，也就是说相对外部作用域完全独立
 	defer func() {
-		fmt.Printf("defer2: x->[%p,%d] \n", &x, x)
+		log.Printf("defer2: x->[%p,%d] \n", &x, x)
 		x += 100
 	}()
 	// 语句块作用域不隔离。
 	{
-		fmt.Printf("defer3: x->[%p,%d] \n", &x, x)
+		log.Printf("defer3: x->[%p,%d] \n", &x, x)
 	}
+	/*
+		这里的return其实做了两件事
+		1. 将x赋值为100
+		2. reutrn x
+		所以当赋值完成以后，开始执行defer，最终导致return的x值在第二个defer中被修改后返回
+	*/
 	return 100
 }
 
+/*
+	延迟调用时注册的是调用，必须提供执行所需的参数（哪怕为空），
+	所以参数再注册时就被复制并缓存起来。
+	因此如果对参数比较敏感，可以使用闭包或者指针
+*/
+func DeferParamTest() {
+	x, y := 1, 2
+	defer func(a int) {
+		// 打印 a = 1 y = 202 因为 y为DeferParamTest函数闭包引用，因此在整个闭包调用过程中保持一致
+		// 而a在注册调用时，已经被复制为注册时x的值，也就是 1，因此a永远是1
+		log.Printf("DeferParamTest() defer: x = %d, y = %d", a, y)
+	}(x)
+
+	x += 100
+	y += 200
+	log.Printf("DeferParamTest() main: x = %d, y = %d", x, y)
+}
+
 func DeferTest() {
-	fmt.Printf("test: %d \n", DeferFunc())
+	log.Printf("test: %d \n", DeferFunc())
 }
 
 /*
@@ -240,6 +263,7 @@ func FuncSignatureTest() {
 	add := func(x, y int) int { return x + y }
 	x := mathCalc(1, 2, add)
 	log.Printf("计算结果是：%d", x)
+
 	minus := func(x, y int) int { return x - y }
 	x = mathCalc(1, 2, Caculater(minus))
 	log.Printf("计算结果是：%d", x)

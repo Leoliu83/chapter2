@@ -5,6 +5,8 @@ package main
 // pprof 为原生性能分析包
 import (
 	"chapter2/test1"
+	"runtime"
+	"time"
 	// "runtime/pprof"
 )
 
@@ -27,7 +29,9 @@ func main() {
 	// test1.PointTest()
 	// test1.StructTest()
 	// test1.FuncTest()
-	test1.FuncSignatureTest()
+	// test1.DeferTest()
+	// test1.DeferParamTest()
+	// test1.FuncSignatureTest()
 	// test1.InterfaceTest()
 	// test1.MapTest()
 	// test1.MapCompareTest()
@@ -51,4 +55,15 @@ func main() {
 	// test1.InterfaceInternalTest()
 	// test1.NilInterfaceTest()
 	// test1.InterfaceTypeTransform()
+	// test1.goroutineTest()
+	// test1.GoroutineWaitTest()
+	// test1.GoRoutineParallelTest(16, true)
+	// test1.LocalStorageTest()
+	// test1.GoschedTest()
+	test1.GoExitTest()
+
+	{
+		time.Sleep(time.Second)
+		runtime.Goexit() // 主进程调用该函数，会等待其他所有goroutine任务执行完成后，让进程崩溃
+	}
 }
