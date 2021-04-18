@@ -55,8 +55,9 @@ type cannotcomp struct {
 
 // StructTest 方法用来测试结构体
 func StructTest() {
-	// 结构体初始化方法1
+	// 结构体初始化方法1, 只要定义了结构体变量，结构体就会被初始化，并且所有的属性都有了默认值
 	var f MixedFractions
+	log.Printf("f struct addr: %p, value: %+v", &f, f)
 	f.denominator = 2
 	f.numerator = 1
 	f.wholeNum = 1

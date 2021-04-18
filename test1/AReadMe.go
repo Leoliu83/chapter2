@@ -14,29 +14,21 @@ package test1
 		go tool objdump xxx.o // go file无效
 */
 /*
-	banchmark 结果说明
-	e.g.：
-	[
-		goos: windows
-		goarch: amd64
-		pkg: chapter2/test1
-		BenchmarkSliceTest-8   	  878136	      1288 ns/op	    8192 B/op	       1 allocs/op
-		PASS
-		ok  	chapter2/test1	1.335s
-	]
-	* BenchmarkSliceTest-8
-		BenchmarkSliceTest 是测试函数名，8表示线程数
-	* 878136
-		表示一共执行次数，也就是b.N的值
-	* 1288 ns/op
-		表示平均每次操作花费了1288纳秒
-	* 8192 B/op
-		表示平均每次操作申请了8192 Byte内存
-	* 1 allocs/op
-		表示每次操作申请了1次内存
-	测试运行参数：
-	1. 参数-bench，它指明要测试的函数；点字符意思是测试当前所有以Benchmark为前缀函数
-	2. 参数-benchmem，性能测试的时候显示测试函数的内存分配大小，内存分配次数的统计信息
-	3. 参数-count n,运行测试和性能多少此，默认一次
-	如果不希望把某些操作纳入计时，那么在这些操作后执行 b.ResetTimer()
+	go在runtime期间会为我们检测所有协程是否在等待着什么，例如接收channel数据 <- channel，
+	如果发现有协程在等待，但是却没有其他协程在运行，就会抛出错误：
+		fatal error: all goroutines are asleep - deadlock!
+	我们也可以让一个协程进入死循环但不做发送数据，另一个协程等待接收channel数据 <- channel
+	只有死循环的协程不结束，就不会出现 deadlock 错误。
+	e.g.
+		go func() { // 如果该协程结束，就会引发 deadlock 错误
+			defer wg.Done()
+			for {
+				time.Sleep(1)
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			<-a
+		}()
 */

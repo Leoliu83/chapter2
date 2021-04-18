@@ -374,7 +374,7 @@ func (d sth73) test() {
 	接口的参数传递
 	如果b是接口，a实现了b接口
 	如果a实现方法的receiver都是指针类型，将a作为参数传递给参数类型为接口b的函数时，必须传递指针
-	如果a实现方法的receiver都是指针类型，将a作为参数传递给参数类型为接口b的函数时，必须传递指针
+	如果a实现方法的receiver都是值类型，将a作为参数传递给参数类型为接口b的函数时，才可以传值
 */
 type Lock interface {
 	lock()
@@ -406,5 +406,6 @@ func printLock(l Lock) {
 func InterfaceParamTest() {
 	var l someLock
 	log.Printf("out[someLock]: %p,%+v", l, l)
+	// 如果 someLock 的receiver只有指针的时候，该参数必须传递&l
 	printLock(l)
 }

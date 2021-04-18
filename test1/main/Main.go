@@ -65,7 +65,13 @@ func main() {
 	// test1.ChannelAsyncTest()
 	// test1.ChannelCompareTest()
 	// test1.ChannelReceiveTest()
-	test1.ChannelMultiReceiveTest()
+	// test1.ChannelMultiReceiveTest()
+	// test1.ChannelMultiNoticeTest()
+	// test1.ChannelClosedAndNilTest()
+	// test1.ChannelSimplexTest()
+	// test1.ChannelSelectTest()
+	// test1.ChannelSelectTest1()
+	test1.ChannelSelectTest2()
 
 	// {
 	// 	time.Sleep(time.Second)
