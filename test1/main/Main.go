@@ -5,8 +5,8 @@ package main
 // pprof 为原生性能分析包
 import (
 	"chapter2/test1"
-	"runtime"
-	"time"
+	// "runtime"
+	// "time"
 	// "runtime/pprof"
 )
 
@@ -60,10 +60,15 @@ func main() {
 	// test1.GoRoutineParallelTest(16, true)
 	// test1.LocalStorageTest()
 	// test1.GoschedTest()
-	test1.GoExitTest()
+	// test1.GoExitTest()
+	// test1.ChannelSyncTest()
+	// test1.ChannelAsyncTest()
+	// test1.ChannelCompareTest()
+	// test1.ChannelReceiveTest()
+	test1.ChannelMultiReceiveTest()
 
-	{
-		time.Sleep(time.Second)
-		runtime.Goexit() // 主进程调用该函数，会等待其他所有goroutine任务执行完成后，让进程崩溃
-	}
+	// {
+	// 	time.Sleep(time.Second)
+	// 	runtime.Goexit() // 主进程调用该函数，会等待其他所有goroutine任务执行完成后，让进程崩溃
+	// }
 }
