@@ -6,7 +6,21 @@ import (
 
 func BenchmarkChannelTest(b *testing.B) {
 	for i := 1; i < b.N; i++ {
-		ChannelSelectTest()
+		// ChannelSelectTest()
+		// transOneBlock()
+		transOneInt()
+	}
+}
+
+func BenchmarkChannelTransPerformOneBlockTest(b *testing.B) {
+	for i := 1; i < b.N; i++ {
+		transOneBlock()
+	}
+}
+
+func BenchmarkChannelTransPerformOneIntTest(b *testing.B) {
+	for i := 1; i < b.N; i++ {
+		transOneInt()
 	}
 }
 

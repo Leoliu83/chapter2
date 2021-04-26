@@ -200,3 +200,34 @@ func MapCompareTest() {
 	println(m1 == nil)
 	println(m2 == nil)
 }
+
+/*
+	字典在进行传递时，并不会复制底层数据结构，因此字典内的数据是全局可见的，如果在函数中被改变，外部也会被改变
+	这样设计的好处是，map在传递时候的成本很小
+*/
+func MapParamTest() {
+	mapref = map[string]string{
+		"LightPink": "#FFB6C1",
+		"Pink":      "#FFC0CB",
+		"red":       "#FF0001",
+	}
+	dealColorMap(mapref)
+	log.Printf("MapParamTest[outer]: %+v", mapref)
+}
+
+var mapref map[string]string
+
+func dealColorMap(colormap map[string]string) {
+	for k, v := range colormap {
+		if k == "red" && v != "#FF0000" {
+			colormap[k] = "#FF0000"
+			continue
+		}
+		if k == "Pink" {
+			delete(colormap, k)
+			continue
+		}
+		log.Println(k, v)
+	}
+	log.Printf("MapParamTest[inner]: %+v", colormap)
+}

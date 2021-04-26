@@ -35,6 +35,7 @@ func main() {
 	// test1.InterfaceTest()
 	// test1.MapTest()
 	// test1.MapCompareTest()
+	// test1.MapParamTest()
 	// test1.SliceTest()
 	// test1.StrConvTest()
 	// test1.DoubleTest()
@@ -71,7 +72,13 @@ func main() {
 	// test1.ChannelSimplexTest()
 	// test1.ChannelSelectTest()
 	// test1.ChannelSelectTest1()
-	test1.ChannelSelectTest2()
+	// test1.ChannelSelectTest2()
+	// test1.ChannelFactoryTest()
+	// test1.ChannelSemaphoreTest()
+	// test1.TimeAndTickChannelTest()
+	// test1.ChannelINTandTERMandAtexitTest()
+	// test1.ChannelPerformanceTest()
+	test1.ChannelGarbageTest()
 
 	// {
 	// 	time.Sleep(time.Second)

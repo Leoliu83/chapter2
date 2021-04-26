@@ -2,7 +2,11 @@ package test1
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"runtime"
 	"sync"
+	"syscall"
 	"time"
 	"unsafe"
 )
@@ -386,13 +390,38 @@ func ChannelSelectTest1() {
 
 /*
 	由于实验版本是1.15，原书版本是1.5，故实验时存在差异，在此记录
-	原文说明：
+	原文说明(1.5)：
 		select中如果没有可用的通道，则会进入default，添加default分支可以防止select阻塞
 		也可以在default中添加一些处理逻辑，比如增加通道
-	实验结果：
+	实验结果(1.15)：
 		1. default分支并不能防止select阻塞
 		2. 而且即使select中得所有通道都可用，也会进入分支default
-		3. return会跳出select 也会跳出for，因此select多通道时，有一个通道return，后续所有通道将无接收者，会产生 deadlock错误
+		3. return会跳出select 也会跳出for，因此select多通道时，有一个通道return，后续所有发送通道将无接收者，会产生 deadlock错误
+	2021/4/23:
+		select中default的作用：如果发现某个通道不可用（不可用的定义包括等待数据时产生阻塞）时，会执行default，并直接进入下一次循环
+		如果没有default，会阻塞在随机选择的通道。
+	增加default逻辑能够避免阻塞的情况是：
+	e.g.：
+		阻塞情况：
+			for i:=0;i<10;i++{
+				select{
+				case x,ok:=<-c1
+				case x,ok:=<-c2
+				}
+			}
+			上述代码中，每一次for循环会随机选择一个可用的channel，可能是c1 也可能是c2
+			但如果c1和c2均不可用时，select就会阻塞。
+		非阻塞情况：
+			for i:=0;i<10;i++{
+				select{
+				case x,ok:=<-c1
+				case x,ok:=<-c2
+				default:
+				}
+			}
+			上述代码中，每一次for循环会随机选择一个可用的channel，可能是c1 也可能是c2（与阻塞情况相同）
+			但如果c1和c2均不可用时，select会选择default，*然后进入下一次循环*（浪费循环次数）
+		就像轮询机制
 */
 func ChannelSelectTest2() {
 	done := make(chan struct{})
@@ -428,4 +457,370 @@ func ChannelSelectTest2() {
 	}()
 
 	<-done
+}
+
+/*
+	一般使用工厂方法模式将通道和goroutine绑定
+*/
+type receiver82 struct {
+	sync.WaitGroup
+	data chan int
+}
+
+/*
+	由于receiver中有 sync.WaitGroup ，而 sync.WaitGroup 中又有 nocopy
+	因此receiver只能是指针形式
+*/
+func newReceiver() *receiver82 {
+	r := &receiver82{
+		data: make(chan int),
+	}
+	r.Add(1)
+	go func() {
+		defer r.Done()
+		for x := range r.data { // 接收消息，直到通道被关闭
+			println("recv: ", x)
+		}
+	}()
+	return r
+}
+
+func (r receiver82) close() {
+	close(r.data)
+}
+
+func ChannelFactoryTest() {
+	r := newReceiver()
+	defer r.Done()
+	go func() {
+		for d := range r.data {
+			log.Printf("Receive data value: %d", d)
+		}
+	}()
+
+	r.data <- 1
+	r.data <- 2
+
+	r.close()
+}
+
+/*
+	由于通道本身就是一个并发安全的队列，可以作为id generator，或者pool
+*/
+// 定义字节数组通道
+type pool chan []byte
+
+// 通道不会复制底层数据结构，可以使用值传递，相同的还有 map slice
+func newPool(cap int) pool {
+	return make(pool, cap)
+}
+
+func (p pool) get() []byte {
+	var v []byte
+	select {
+	case v = <-p:
+	case v = <-p:
+		// default:
+		// 	v = make([]byte, 10)
+	}
+	return v
+}
+
+func (p pool) put(b []byte) {
+	select {
+	case p <- b:
+	default:
+	}
+}
+
+func ChannelPoolTest() {
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	p := newPool(10)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 20; i++ {
+			v := p.get()
+			log.Printf("get(): %+v", v)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		b := make([]byte, 0, 10)
+		for i := 0; i < 10; i++ {
+			// bi := byte(i)
+			// b = append(b, bi)
+			b = append(b, byte(i))
+			p.put(b)
+			log.Printf("put1(): %p -> %d -> %+v", b, i, b)
+			// 这里必须要加sleep，如果不加sleep，发送数据的goroutine结束了之后，无论channel
+			time.Sleep(time.Second)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		b := make([]byte, 0, 10)
+		for i := 0; i < 10; i++ {
+			// bi := byte(i)
+			// b = append(b, bi)
+			b = append(b, byte(i+100))
+			p.put(b)
+			log.Printf("put2(): %p -> %d -> %+v", b, i, b)
+			time.Sleep(time.Second)
+		}
+	}()
+
+	wg.Wait()
+}
+
+/*
+	channel 模拟信号量
+	相当于利用了 异步channel的阻塞原理，异步channel的缓冲区填满，但数据没有被读取，后续对该channel的读写将会被阻塞
+	缓冲区的数量，就是信号量的数量
+*/
+func ChannelSemaphoreTest() {
+	runtime.GOMAXPROCS(4)
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 2) // 最大支持两个并发同时执行
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			sem <- struct{}{}        // acquire 获取信号量（向异步channel缓冲区放入数据）
+			defer func() { <-sem }() // 释放信号量 （从异步channel的缓冲区取出数据）
+			time.Sleep(2 * time.Second)
+			log.Println(id, time.Now())
+		}(i)
+	}
+	wg.Wait()
+
+}
+
+/*
+	time包实现了 tick channel 和 timeout
+*/
+func TimeAndTickChannelTest() {
+	go func() {
+		select {
+		case <-time.After(5 * time.Second): // 2秒后超时
+			log.Println("timeout......")
+			os.Exit(0)
+		}
+	}()
+
+	go func() {
+		tick := time.Tick(time.Second)
+		for {
+			select {
+			case <-tick:
+				log.Println(time.Now())
+			}
+		}
+	}()
+
+	<-(chan struct{})(nil) // s会用nil channel阻塞
+}
+
+/*
+	实现接收  INT 和 TERM 信号
+	实现 atexit 函数
+*/
+var exits = &struct {
+	sync.RWMutex
+	funcs   []func()
+	signals chan os.Signal
+}{}
+
+/*
+	atexit函数可以登记这些函数。 exit调⽤终⽌处理函数的顺序和atexit登记的顺序相反（网上很多说造成顺序相反的原因是参数压栈造成的，
+	参数的压栈是先进后出，和函数的栈帧相同），如果⼀个函数被多次登记，也会被多次调⽤。
+*/
+func atexit(f func()) {
+	exits.Lock()                         // 获取读写锁
+	defer exits.Unlock()                 // 延迟释放读写锁（defer可以保证一定执行）
+	exits.funcs = append(exits.funcs, f) // 添加func
+	log.Printf("%+v", exits.funcs)
+}
+
+/*
+	singnal包中的部分源码部分解读
+	// 信号量总共是62个，没有32和33，因此用两个32位数字来标志信号，所以在这里用了一个两个元素的数组array[0]保存1-31 array[1]保存32-62
+	// 1-31号信号都是不可靠信号，不支持排队，32号开始，信号都是可靠信号，支持排队
+	type handler struct {
+    	mask [(numSig + 31) / 32]uint32
+    }
+
+    func (h *handler) want(sig int) bool {
+        return (h.mask[sig/32]>>uint(sig&31))&1 != 0
+    }
+
+	//	假设 sig 为 3
+	//	1. 3&31=3
+	//	2. 1<<3 = 1000
+	//	3. h.mask[0] | 1000  = 0000 0000 0000 0000 0000 0000 0000 1000
+	//                                                               ↑ 0号位
+    func (h *handler) set(sig int) {
+        h.mask[sig/32] |= 1 << uint(sig&31)
+    }
+
+	//  &^ 是 golang 特有的清位符
+    func (h *handler) clear(sig int) {
+        h.mask[sig/32] &^= 1 << uint(sig&31)
+    }
+*/
+func waitExit() {
+	if exits.signals == nil {
+		exits.signals = make(chan os.Signal)
+		// 第一个参数为 chan<- os.Signal类型，表示是  os.Signal类型的channel
+		// 表示将 syscall.SIGINT, syscall.SIGTERM 发送给 exits.signals
+		signal.Notify(exits.signals, syscall.SIGINT, syscall.SIGTERM)
+	}
+	log.Printf("%+v", exits.signals)
+	// 获取读锁, 因为for循环在读取exits.funcs中的内容
+	exits.RLock()
+	for _, f := range exits.funcs {
+		defer f() // 即使某些函数panic，也能确保后续函数被执行
+	} // 延迟调用按照FILO顺序
+	// 释放读锁
+	exits.RUnlock()
+	switch <-exits.signals {
+	case syscall.SIGINT:
+		log.Printf("get SIGINT")
+	case syscall.SIGTERM: // windows下无法测试该信号
+		log.Printf("get SIGTERM")
+	default:
+		log.Printf("unsupport signal")
+	}
+}
+
+/*
+	获取信号测试并实现atexit方法
+*/
+func ChannelINTandTERMandAtexitTest() {
+	atexit(func() { println("exit-1") })
+	atexit(func() { println("exit-2") })
+	waitExit()
+}
+
+/*
+	将发往通道的数据打包，可以减少发送次数，提高性能
+	通道队列用的仍然是锁同步机制
+*/
+/*
+	单个int发送
+	goos: windows
+	goarch: amd64
+	pkg: chapter2/test1
+	cpu: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
+	BenchmarkChannelTransPerformOneIntTest-8   	*** Test killed: ran too long (11m0s).
+	exit status 1
+	FAIL	chapter2/test1	661.550s
+	FAIL
+*/
+func transOneInt() {
+	// log.Print("start")
+	const (
+		max     = 500e6
+		bufsize = 100
+		block   = 500
+	)
+	c := make(chan int, bufsize)
+	done := make(chan struct{})
+	go func() {
+		count := 0
+		for x := range c {
+			count += x
+		}
+		// log.Printf("count = %d", count)
+		close(done)
+	}()
+
+	for i := 0; i < max; i++ {
+		c <- i
+	}
+	close(c)
+	<-done
+}
+
+/*
+	通过block批量发送
+	Running tool: D:\MyTool\Go\bin\go.exe test -benchmem -run=^$ -bench ^(BenchmarkChannelTransPerformOneBlockTest)$ chapter2/test1
+
+	goos: windows
+	goarch: amd64
+	pkg: chapter2/test1
+	cpu: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
+	BenchmarkChannelTransPerformOneBlockTest-8   	     100	 243187330 ns/op	  397600 B/op	       3 allocs/op
+	PASS
+	ok  	chapter2/test1	25.330s
+*/
+func transOneBlock() {
+	// log.Print("start")
+	const (
+		max       = 50000000
+		bufsize   = 100
+		blocksize = 500
+	)
+	count := 0
+	c := make(chan [blocksize]int, bufsize)
+	done := make(chan struct{})
+	go func() {
+		for x := range c {
+			for i := 0; i < blocksize; i++ {
+				count += x[i]
+			}
+			// log.Println("count => ", count)
+			// time.Sleep(1 * time.Second)
+		}
+		// log.Printf("count = %d", count)
+		close(done)
+	}()
+
+	var block [blocksize]int
+	pos := -1
+	for i := 0; i < max; i++ {
+		pos = (i + 1) % blocksize
+		// log.Println(pos)
+		block[pos] = i
+		if pos == 0 {
+			// time.Sleep(time.Second)
+			c <- block
+			// log.Println("send block")
+		}
+	}
+	// log.Println("send block over!")
+	/*
+		close(c)非常重要！
+		如果不关闭会引发Deadlock，因为向c发送数据的goroutine都已经完成，但c并没有close
+		那么上面的匿名goroutine将会一直等待数据（for x := range c），从而永远无法执行close(done)
+		而主线程由于<-done，也将永远被阻塞，因此引发了deadlock
+	*/
+	close(c)
+	<-done
+	// log.Println("done!")
+}
+func ChannelPerformanceTest() {
+	transOneBlock()
+	transOneInt()
+}
+
+/*
+	通道可能引发 goroutine leak，就是说，goroutine在处于发送或者接收阻塞状态，但一直未被唤醒。
+	垃圾回收器并不收集此类资源，导致他们会长时间在等待队列里休眠，造成资源泄露
+*/
+func ChannelGarbageTest() {
+	c := make(chan int)
+	for i := 1; i < 100; i++ {
+		go func() {
+			<-c // 造成资源泄露
+		}()
+	}
+
+	for i := 0; i < 30; i++ {
+		time.Sleep(time.Second)
+		runtime.GC() // 强制垃圾回收也无法回收
+	}
 }
