@@ -810,6 +810,8 @@ func ChannelPerformanceTest() {
 /*
 	通道可能引发 goroutine leak，就是说，goroutine在处于发送或者接收阻塞状态，但一直未被唤醒。
 	垃圾回收器并不收集此类资源，导致他们会长时间在等待队列里休眠，造成资源泄露
+	使用 gotrace 查看详细gc信息(未测试)
+	GODEBUG="gotrace=1,schedtrace=1000,scheddetail=1"
 */
 func ChannelGarbageTest() {
 	c := make(chan int)

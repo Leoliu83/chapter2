@@ -1,10 +1,11 @@
 package main
 
 // 导入自定义的包，chapter2/test1 包下的所有函数皆可使用'包名.xxx'的方式调用
+// 可以使用别名的方式导入包，例如  test1 "chapter2/test1" 中  test1就是别名，默认是以最后一个包名作为别名
 // 一个包导入对应一个目录，chapter2在GOPATH路径下，因此可以使用相对路径直接导入
 // pprof 为原生性能分析包
 import (
-	"chapter2/test1"
+	test1 "chapter2/test1"
 	// "runtime"
 	// "time"
 	// "runtime/pprof"
@@ -78,7 +79,11 @@ func main() {
 	// test1.TimeAndTickChannelTest()
 	// test1.ChannelINTandTERMandAtexitTest()
 	// test1.ChannelPerformanceTest()
-	test1.ChannelGarbageTest()
+	// test1.ChannelGarbageTest()
+	// test1.SynchronizeTest()
+	// test1.SynchronizeTest1()
+	// test1.MutexTest()
+	test1.MutexRecursiveTest1()
 
 	// {
 	// 	time.Sleep(time.Second)
