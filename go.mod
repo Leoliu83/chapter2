@@ -1,4 +1,4 @@
-module chapter2
+module golangStudy
 
 go 1.15
 

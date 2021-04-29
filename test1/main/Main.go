@@ -5,7 +5,7 @@ package main
 // 一个包导入对应一个目录，chapter2在GOPATH路径下，因此可以使用相对路径直接导入
 // pprof 为原生性能分析包
 import (
-	test1 "chapter2/test1"
+	test1 "golangStudy/test1"
 	// "runtime"
 	// "time"
 	// "runtime/pprof"
@@ -83,8 +83,10 @@ func main() {
 	// test1.SynchronizeTest()
 	// test1.SynchronizeTest1()
 	// test1.MutexTest()
-	test1.MutexRecursiveTest1()
-
+	// test1.MutexRecursiveTest1()
+	// test1.PermissionTest()
+	// test1.InternalTest()
+	test1.InternalTest1()
 	// {
 	// 	time.Sleep(time.Second)
 	// 	runtime.Goexit() // 主进程调用该函数，会等待其他所有goroutine任务执行完成后，让进程崩溃
