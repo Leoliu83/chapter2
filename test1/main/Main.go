@@ -86,7 +86,12 @@ func main() {
 	// test1.MutexRecursiveTest1()
 	// test1.PermissionTest()
 	// test1.InternalTest()
-	test1.InternalTest1()
+	// test1.InternalTest1()
+	// test1.ReflectTest()
+	// test1.ReflectTest1()
+	// test1.ReflectTest2()
+	test1.ReflectTest3()
+
 	// {
 	// 	time.Sleep(time.Second)
 	// 	runtime.Goexit() // 主进程调用该函数，会等待其他所有goroutine任务执行完成后，让进程崩溃
