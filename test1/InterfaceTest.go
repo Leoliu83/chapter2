@@ -70,7 +70,7 @@ func AnonymousInterfaceTest() {
 	// 定义一个变量d 是匿名接口类型 'interface {string() string}'
 	var d interface {
 		string() string
-	} = stringerImpl{} // 给这个变量赋值为 stringerImpl结构体实例
+	} = stringerImpl{} // 给这个变量赋值为 stringerImpl 结构体实例
 	// 创建一个 anonymous 实例，其属性 data 是一个匿名接口，将变量d赋值给该属性
 	n := anonymous{data: d}
 	// 调用n的data属性的 string() 方法

@@ -22,6 +22,7 @@ As an exception to the addressability requirement,
 x may also be a (possibly parenthesized) composite literal.
 If the evaluation of x would cause a run-time panic, then the evaluation of &x does too.
 对于一个对象x, 如果它的类型为T, 那么&x则会产生一个类型为*T的指针，这个指针指向x。
+i:=100 // i不可寻址   &i // 产生了一个指向i的指针，可寻址
 上面规范中的这段话规定， x必须是可寻址的， 也就是说，它只能是以下几种方式：
 	·一个变量: &x
 	·可寻址struct的字段: &point.X
