@@ -94,7 +94,13 @@ func main() {
 	// test1.ReflectTypeTest4()
 	// test1.ReflectTypeTest5()
 	// test1.ReflectTypeTest6()
-	test1.ReflectValueTest1()
+	// test1.ReflectValueTest1()
+	// test1.ReflectValueTest2()
+	// test1.ReflectValueTest3()
+	// test1.ReflectMethodTest1()
+	// test1.ReflectCreateTest1()
+	test1.ReflectPerformanceTest1()
+
 	// test1.NilTest1()
 
 	// {
