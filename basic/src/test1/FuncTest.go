@@ -238,6 +238,7 @@ func VariableLengthParameterUseTest() {
 /*
 	go返回值可以有多个，并且可以对返回值进行命名
 	对返回值命名可以让返回值含义更加清晰
+	****注意 如果是结构体返回值变量，变量默认值为nil，必须做初始化
 	命名返回值可以当局部变量使用，由retur隐式返回
 */
 func ReturnTest(a int, b int) (total int, average int) {
