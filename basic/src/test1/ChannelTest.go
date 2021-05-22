@@ -24,6 +24,7 @@ import (
 		相比起来，Actor是透明的，它不在乎数据类型及通道，只要知道接受者信箱即可，默认就是异步方式，发送方对消息是否被接收或者被处理并不关心
 
 	<-channel 通道接收数据操作只执行一次，不会反复接收，需要使用for循环多次调用 <-channel
+	close 也是一种信号，因此发送close也必须等待前面的信息都接收完成才可被接收到，因此不会出现close后丢失close前的消息的情况
 */
 func ChannelSyncTest() {
 	done := make(chan struct{})

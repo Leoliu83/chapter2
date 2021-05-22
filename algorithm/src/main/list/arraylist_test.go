@@ -60,13 +60,29 @@ func TestGetElem(t *testing.T) {
 func TestListInsert(t *testing.T) {
 	var list ArrayList
 	list.InitList()
+	for i := 0; i < 5; i++ {
+		list.ListAppend(i)
+	}
+	t.Logf("list: %+v", list)
 	var ok bool
-	ok = list.ListInsert("123", 1)
-	t.Logf("ok? %t,Element: %+v", ok, list.data)
-	ok = list.ListInsert("456", 1)
-	t.Logf("ok? %t,Element: %+v", ok, list.data)
-	ok = list.ListInsert("789", 2)
-	t.Logf("ok? %t,Element: %+v", ok, list.data)
+	ok = list.ListInsert(-2, 2)
+	t.Logf("ok? %t,Element: %+v", ok, list)
+	ok = list.ListInsert(-4, 4)
+	t.Logf("ok? %t,Element: %+v", ok, list)
+	ok = list.ListInsert(-7, 7)
+	t.Logf("ok? %t,Element: %+v", ok, list)
+	ok = list.ListInsert(-8, 9)
+	if ok {
+		t.Logf("ok? %t,Element: %+v", ok, list)
+	}
+	ok = list.ListInsert(-9, 9)
+	if ok {
+		t.Logf("ok? %t,Element: %+v", ok, list)
+	}
+	ok = list.ListInsert(-10, 10)
+	if ok {
+		t.Logf("ok? %t,Element: %+v", ok, list)
+	}
 }
 
 func TestLocalElem(t *testing.T) {
