@@ -4,13 +4,13 @@ import (
 	"testing"
 )
 
-func TestInitList(t *testing.T) {
+func TestArrayListInitList(t *testing.T) {
 	var list ArrayList
 	ok := list.InitList()
 	t.Logf("%t,%+v", ok, list.data)
 }
 
-func TestListAppend(t *testing.T) {
+func TestArrayListListAppend(t *testing.T) {
 	var list ArrayList
 	ok := list.InitList()
 	if !ok {
@@ -22,7 +22,7 @@ func TestListAppend(t *testing.T) {
 	}
 }
 
-func TestListDelete(t *testing.T) {
+func TestArrayListListDelete(t *testing.T) {
 	var list ArrayList
 	ok := list.InitList()
 	if !ok {
@@ -41,23 +41,23 @@ func TestListDelete(t *testing.T) {
 	t.Logf("Delete element: %#v,Delete success? %t,list: %+v", e, ok, list)
 }
 
-func TestListEmpty(t *testing.T) {
+func TestArrayListListEmpty(t *testing.T) {
 	var list ArrayList
 	isEmpty := list.ListEmpty()
 	t.Logf("isEmpty: %t", isEmpty)
 }
 
-func TestGetElem(t *testing.T) {
+func TestArrayListGetElem(t *testing.T) {
 	var list ArrayList
 	ok := list.InitList()
-	t.Log(len(list.data))
+	t.Log(ok, len(list.data))
 	e, ok := list.GetElem(9)
 	if ok {
 		t.Logf("ok? %t,Element: %+v", ok, e)
 	}
 }
 
-func TestListInsert(t *testing.T) {
+func TestArrayListListInsert(t *testing.T) {
 	var list ArrayList
 	list.InitList()
 	for i := 0; i < 5; i++ {
@@ -85,7 +85,7 @@ func TestListInsert(t *testing.T) {
 	}
 }
 
-func TestLocalElem(t *testing.T) {
+func TestArrayListLocalElem(t *testing.T) {
 	var list ArrayList
 	list.InitList()
 	_ = list.ListAppend("1")
@@ -96,7 +96,7 @@ func TestLocalElem(t *testing.T) {
 	t.Logf("i = %d", i)
 }
 
-func TestUnion(t *testing.T) {
+func TestArrayListUnion(t *testing.T) {
 	var list ArrayList
 	var list1 ArrayList
 	list.InitList()
