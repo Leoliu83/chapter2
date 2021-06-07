@@ -2,6 +2,7 @@ package test1
 
 import (
 	"errors"
+	"gostudy/algorithm/src/util"
 	"log"
 	"reflect"
 
@@ -299,4 +300,51 @@ func SliceCopyTest() {
 	log.Println("拷贝元素数量 s -> s2 为: ", n)
 	log.Println("数组变量[s]值为: ", s)
 	log.Println("数组变量[s2]值为: ", s2)
+}
+
+/*
+	Slice 作为参数仍然是值传递，可以看到(sliceAsParamValue)Data的地址是不同的，只是都指向了同一个数组
+	而sliceAsParamAddr中Data的值是相同的
+*/
+func SliceAsParamTest() {
+	s := make([]int, 0, 5)
+	s = append(s, 1, 2, 3)
+
+	log.Printf("[Address] First Element: %p, %+v", &s[0], s)
+	header := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+	log.Printf("%+v", header)
+	util.PrintSliceHeader(s, reflect.Int)
+	sliceAsParamValue(s)
+	// 👇下面打印出来 Len: 3 说明，虽然底层数组改变了，但是Len和Cap没有改变
+	util.PrintSliceHeader(s, reflect.Int)
+	log.Printf("%p, %d", &s[2], unsafe.Sizeof(1))
+	i := (unsafe.Pointer(uintptr(unsafe.Pointer(&s[2])) + unsafe.Sizeof(1)))
+	log.Printf("%p, %d", i, *(*int)(i))
+}
+
+/*
+	Slice 是引用传递，值传递时复制的是Slice头，因此使用 slice[idx]下标访问数据时，是可以改变底层数组的值
+	但是 append 不行，append会改变slice的长度，长度是在header中的，因此外部slice的底层数组仍然无法访问底层数组
+	结论：如果想在函数中改变slice的值有以下几种方法：
+	1. 传入指针
+	2. 如果不需要扩容，在Len范围内使用下标赋值
+	3. 如果要改变长度（例如使用append扩容），需要返回新的slice
+*/
+func sliceAsParamValue(ps []int) {
+	log.Printf("%+v", ps)
+	util.PrintSliceHeader(ps, reflect.Int)
+	// 👇由于底层数组指针永远指向的是同一个数组，因此直接改变数组的值也会改变调用者的slice底层的数组值
+	ps[2] = 4
+	// 👇由于slice长度是3，下面这个赋值会报错
+	// ps[3] = 4
+	log.Printf("%p", &ps[2])
+	// 👇下面虽然改变了底层数组，但也改变了Len属性，由于Len属性是副本，因此外部实际传入的slice参数的Len和Cap没有改变
+	ps = append(ps, 5) // append不行
+	util.PrintSliceHeader(ps, reflect.Int)
+	log.Printf("%p,%p", &ps[2], &ps[3])
+}
+
+func sliceAsParamAddr(ps *[]int) {
+	sh := (*reflect.SliceHeader)(unsafe.Pointer(ps))
+	log.Printf("Addr: %p,%p,%x,%d,%d", &sh.Data, &(*ps)[0], sh.Data, sh.Cap, sh.Len)
 }

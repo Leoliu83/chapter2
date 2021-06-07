@@ -38,6 +38,7 @@ func main() {
 	// test1.MapCompareTest()
 	// test1.MapParamTest()
 	// test1.SliceTest()
+	test1.SliceAsParamTest()
 	// test1.StrConvTest()
 	// test1.DoubleTest()
 	// test1.PointTestSenior()
@@ -101,7 +102,7 @@ func main() {
 	// test1.ReflectCreateTest1()
 	// test1.ReflectPerformanceTest1()
 
-	test1.NilTest1()
+	// test1.NilTest1()
 
 	// {
 	// 	time.Sleep(time.Second)
