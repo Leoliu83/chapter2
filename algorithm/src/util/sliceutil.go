@@ -17,6 +17,7 @@ func PrintSliceHeader(s interface{}, t reflect.Kind) {
 	var isSlice bool
 	v := reflect.ValueOf(s)
 	// 通过Kind判断是否是slice
+	// 如果传入的是指针，这里可以使用 v.Elem().Kind()
 	switch v.Kind() {
 	case reflect.Slice:
 		isSlice = true

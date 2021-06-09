@@ -318,6 +318,9 @@ func SliceAsParamTest() {
 	// 👇下面打印出来 Len: 3 说明，虽然底层数组改变了，但是Len和Cap没有改变
 	util.PrintSliceHeader(s, reflect.Int)
 	log.Printf("%p, %d", &s[2], unsafe.Sizeof(1))
+	// 👇使用特殊的方式获取在函数内改变的值，也就是ps = append(ps, 5)产生的值
+	// 可以用这种方式访问，也是由于这里meke slice的最大长度为5，append不会改变原数组的地址
+	// 通过地址计算可以获取最后一个在函数中改变的，该函数中不可见数组元素值
 	i := (unsafe.Pointer(uintptr(unsafe.Pointer(&s[2])) + unsafe.Sizeof(1)))
 	log.Printf("%p, %d", i, *(*int)(i))
 }
@@ -333,13 +336,15 @@ func SliceAsParamTest() {
 func sliceAsParamValue(ps []int) {
 	log.Printf("%+v", ps)
 	util.PrintSliceHeader(ps, reflect.Int)
-	// 👇由于底层数组指针永远指向的是同一个数组，因此直接改变数组的值也会改变调用者的slice底层的数组值
+	// 👇由于底层数组指针永远指向的是同一个数组，因此在长度len以内改变数组的值也会改变调用者的slice底层的数组值
+	// 调用该函数的调用者可以获取到已改变的值 4
 	ps[2] = 4
 	// 👇由于slice长度是3，下面这个赋值会报错
 	// ps[3] = 4
 	log.Printf("%p", &ps[2])
-	// 👇下面虽然改变了底层数组，但也改变了Len属性，由于Len属性是副本，因此外部实际传入的slice参数的Len和Cap没有改变
-	ps = append(ps, 5) // append不行
+	// 👇下面不但改变了底层数组，也改变了Len属性，但由于Len属性是副本，因此外部实际传入的slice参数的Len和Cap没有改变
+	ps = append(ps, 5)
+	// 👆虽然在该函数中改变的值5，但在外部用可以特殊的方式可以获取到该值
 	util.PrintSliceHeader(ps, reflect.Int)
 	log.Printf("%p,%p", &ps[2], &ps[3])
 }
