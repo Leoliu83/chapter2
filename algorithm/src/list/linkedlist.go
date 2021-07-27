@@ -13,6 +13,10 @@ type Node struct {
 	next *Node
 }
 
+/*
+	这里可以使用 type LinkedList = Node
+	receiver 就可以使用 *LinkedList
+*/
 type LinkedList = *Node
 
 /*

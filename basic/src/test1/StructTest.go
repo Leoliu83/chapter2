@@ -417,6 +417,15 @@ func StructMemoryTest() {
 	`
 	/*
 		说明：
+		结构体的地址是第一个属性的地址，例如：
+		struct{
+			a int // 结构体的地址就是int地址
+			b string
+		}
+		struct{
+			b string // 结构体的地址就是string的地址
+			a int
+		}
 		uintptr(unsafe.Pointer(&v)): 将v结构体的地址转换为 uintptr 便于数学运算
 		unsafe.Sizeof(v): v结构体的内存占用大小
 		unsafe.Alignof(v): 对齐指数

@@ -329,7 +329,7 @@ func SliceAsParamTest() {
 	Slice 是引用传递，值传递时复制的是Slice头，因此使用 slice[idx]下标访问数据时，是可以改变底层数组的值
 	但是 append 不行，append会改变slice的长度，长度是在header中的，因此外部slice的底层数组仍然无法访问底层数组
 	结论：如果想在函数中改变slice的值有以下几种方法：
-	1. 传入指针
+	1. 传入指针（不可行，因为由于slice本身就是引用类型，append不能对slice的指针进行操作，也无法使用指针取值）
 	2. 如果不需要扩容，在Len范围内使用下标赋值
 	3. 如果要改变长度（例如使用append扩容），需要返回新的slice
 */
@@ -347,9 +347,4 @@ func sliceAsParamValue(ps []int) {
 	// 👆虽然在该函数中改变的值5，但在外部用可以特殊的方式可以获取到该值
 	util.PrintSliceHeader(ps, reflect.Int)
 	log.Printf("%p,%p", &ps[2], &ps[3])
-}
-
-func sliceAsParamAddr(ps *[]int) {
-	sh := (*reflect.SliceHeader)(unsafe.Pointer(ps))
-	log.Printf("Addr: %p,%p,%x,%d,%d", &sh.Data, &(*ps)[0], sh.Data, sh.Cap, sh.Len)
 }
