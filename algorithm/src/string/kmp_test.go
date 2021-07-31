@@ -8,5 +8,5 @@ func TestGetNextArray(t *testing.T) {
 }
 
 func TestGetNext(t *testing.T) {
-	GetNext("我")
+	GetNext("aaaaaab")
 }

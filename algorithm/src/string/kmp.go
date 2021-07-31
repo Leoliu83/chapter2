@@ -3,6 +3,7 @@ package string
 import (
 	"fmt"
 	"log"
+	"unsafe"
 )
 
 func init() {
@@ -71,26 +72,43 @@ func GetNextArray(sub string) {
 	log.Printf("%+v", next)
 }
 
+/*
+	原书中代码
+*/
 func GetNext(sub string) {
-	l := len(sub)
-	subArray := make([]int, l+1)
-	subArray[0] = l
 	runeArray := []rune(sub)
+	log.Printf("%+v", runeArray)
+	l := len(runeArray)
+	// 打印地址
+	// printRuneArray(runeArray)
+	// 新数组 下标0位放长度，后面开始放数据
+	subArray := make([]int32, l+1)
+	// 将原始string的字符数组长度保存在数组的0号位置
+	subArray[0] = int32(l)
 	log.Printf("%d", len(runeArray))
-	// copy(subArray[1:], *pt)
-	// log.Printf("%+v", subArray)
-	// next := make([]int, l)
-	// var i, j int = 1, 0
-	// next[1] = 0
-	// for i < l {
-	// 	// sub[j]表示前缀的单个字符
-	// 	// sub[i]表示后缀单个字符
-	// 	if j == 0 || sub[i] == sub[j] {
-	// 		i++
-	// 		j++
-	// 		next[i] = j
-	// 	}
-	// }
+	intArrayP := (*[]int32)(unsafe.Pointer(&runeArray))
+	copy(subArray[1:], *intArrayP)
+	log.Printf("%+v", subArray)
+
+	// 定义i和j
+	var i, j int32 = 1, 0
+	// 创建next数组
+	next := make([]int32, l+1)
+	// 书中的next从1开始，书中用subArray[0]字符串表示长度
+	next[1] = 0
+	for i < subArray[0] {
+		/*
+			subArray[j]表示`前缀`的单个字符
+			subArray[i]表示`后缀`的单个字符
+		*/
+		// 当j=0，也就是前缀为0
+		// 当 前缀单个字符 = 后缀单个字符
+		if j == 0 || subArray[i] == subArray[j] {
+			i++
+			j++
+			next[i] = j
+		}
+	}
 }
 
 /*
@@ -117,4 +135,11 @@ func printStr(sub string) {
 	ibegin += iend
 	log.Printf("%s", ibegin)
 	log.Printf("%s", sbegin)
+}
+
+func printRuneArray(arr []rune) {
+	l := len(arr)
+	for i := 0; i < l; i++ {
+		log.Printf("%p:%d(%T)", &arr[i], arr[i], arr[i])
+	}
 }
