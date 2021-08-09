@@ -3,6 +3,7 @@ package string
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"unsafe"
 )
 
@@ -77,7 +78,7 @@ func GetNextArray(sub string) {
 */
 func GetNext(sub string) {
 	runeArray := []rune(sub)
-	log.Printf("%+v", runeArray)
+	// log.Printf("%+v", runeArray)
 	l := len(runeArray)
 	// 打印地址
 	// printRuneArray(runeArray)
@@ -85,29 +86,39 @@ func GetNext(sub string) {
 	subArray := make([]int32, l+1)
 	// 将原始string的字符数组长度保存在数组的0号位置
 	subArray[0] = int32(l)
-	log.Printf("%d", len(runeArray))
+	// log.Printf("%d", len(runeArray))
 	intArrayP := (*[]int32)(unsafe.Pointer(&runeArray))
 	copy(subArray[1:], *intArrayP)
-	log.Printf("%+v", subArray)
-
+	// log.Printf("%+v", subArray)
+	printRuneArray(subArray, true)
 	// 定义i和j
-	var i, j int32 = 1, 0
+	var j, i int32 = 0, 1
 	// 创建next数组
 	next := make([]int32, l+1)
 	// 书中的next从1开始，书中用subArray[0]字符串表示长度
 	next[1] = 0
+	// 循环比对,这个for循环很像主串i值不回溯，j值根据情况回溯
 	for i < subArray[0] {
 		/*
-			subArray[j]表示`前缀`的单个字符
-			subArray[i]表示`后缀`的单个字符
+			subArray[j]表示`前缀`的单个字符(自比较时的新`子串`)
+			subArray[i]表示`后缀`的单个字符(自比较时的新`主串`)
 		*/
-		// 当j=0，也就是前缀为0
-		// 当 前缀单个字符 = 后缀单个字符
+		/*
+			当j=0，也就是前缀为0，此时后缀为1，i和j递增
+			  因为1是首字符，0表示字符串长度，也就是数组长度
+			  所以也就是从 1 2 开始进行比较
+			当 前缀单个字符 = 后缀单个字符，i和j递增
+		*/
 		if j == 0 || subArray[i] == subArray[j] {
-			i++
 			j++
+			i++
 			next[i] = j
+		} else {
+			// log.Print(i, ":", j, ",", string(subArray[i]), ":", string(subArray[j]), ",", j, ":", next[j])
+			// 若字符不相同，则j值回溯，
+			j = next[j]
 		}
+		log.Printf("%+v", next)
 	}
 }
 
@@ -137,9 +148,25 @@ func printStr(sub string) {
 	log.Printf("%s", sbegin)
 }
 
-func printRuneArray(arr []rune) {
-	l := len(arr)
-	for i := 0; i < l; i++ {
-		log.Printf("%p:%d(%T)", &arr[i], arr[i], arr[i])
+/*
+	打印run数组，以字符串数组的形式输出
+*/
+func printRuneArray(arr []rune, firstLen bool) {
+	var s []string
+	var start int
+	if firstLen {
+		s = make([]string, len(arr)+1)
+		s[0] = strconv.Itoa(int(arr[0]))
+		start = 1
+	} else {
+		s = make([]string, len(arr))
+		start = 0
 	}
+
+	l := len(arr)
+	for i := start; i < l; i++ {
+		// log.Printf("%p:%d(%T)", &arr[i], arr[i], arr[i])
+		s[i] = string(arr[i])
+	}
+	log.Printf("%+v", s)
 }
