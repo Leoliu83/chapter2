@@ -212,6 +212,7 @@ func StructEmptyTest() {
 		这个类型称为未命名类型（ Unamed Type ）。未命名类型又称为类型字面量（ Type Literal ）。
 		Go 语言的基本类型中的复合类型：数组（ array ）、切片（ slice ）、字典（ map ）、通道（ channel ）、指针（ pointer ） 、函数字面量（ function ）、结构（ struct ）和接口（ interface ）都属于类型字面量，也都是未命名类型。
 		所以 *int , []int , [2]int , map[k]v 都是未命名类型。
+	结构体可以直接调用匿名字段的方法或者属性，在外部调用者来看是完全透明的，这也是设计原则中'组合'的一个实现
 */
 func AnonymousFiledTest() {
 	type attr struct {
@@ -241,7 +242,7 @@ func AnonymousFiledTest() {
 			perm: 0755,
 		},
 	}
-	f.perm = 0644                               // 直接设置匿名字段成员
+	f.perm = 0644                               // 直接设置匿名字段成员(组合)
 	log.Printf("f.perm: %d, f: %+v", f.perm, f) // 直接读取匿名字段成员
 
 	// 隐式字段名不包含包名
