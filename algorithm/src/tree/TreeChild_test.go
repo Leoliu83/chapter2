@@ -12,7 +12,7 @@ func TestTreeChildInitTree(t *testing.T) {
 func TestTreeChildCDestoryTree(t *testing.T) {
 	tree := CInitTree(10)
 	t.Logf("%v,%p,%+v", &tree, tree, tree)
-	CDestoryTree(tree)
+	tree.Destory()
 	t.Logf("%v,%p,%+v", &tree, tree, tree)
 }
 

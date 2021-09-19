@@ -10,6 +10,7 @@ import (
 /*
 	树的孩子表示法
 	每个结点有多个指针域，其中每个指针指向一棵树的根节点，我们把这种方法称为多重链表表示法。
+	TODO 待改进
 */
 /*
 	结点的数据类型
@@ -37,12 +38,11 @@ type Cbox struct {
 }
 
 /*
-	结点数组
+	孩子结点表示法的树
 */
 type CTree struct {
 	debug   bool
 	flag    int    // 位图标志，用于快速定位可用的数组下标(每一个bit含义: 0空 1非空)
-	flaglv1 int    // 位图标志，用于快速定位可用的数组下标当flag不够用时候，增加lv1
 	maxsize int    // 最大结点数
 	nodes   []Cbox // 结点数组
 	r, n    int    // 根位置和节点数
@@ -56,7 +56,7 @@ func init() {
 	初始化空树
 */
 func CInitTree(maxsize int) *CTree {
-	ctree := CTree{maxsize: maxsize, nodes: make([]Cbox, maxsize), r: 0, n: 0, flag: 0, flaglv1: 0, debug: false}
+	ctree := CTree{maxsize: maxsize, nodes: make([]Cbox, maxsize), r: 0, n: 0, flag: 0, debug: false}
 	/*
 		下面这段代码用于注册垃圾回收时所需要执行的函数
 		类似于java中的Object中的finalize()方法
@@ -78,16 +78,17 @@ func CInitTree(maxsize int) *CTree {
 /*
 	销毁数，在这里无法像c一样释放内存，因此只能将所有参数初始化
 */
-func CDestoryTree(t *CTree) {
-	t.maxsize = -1 //请空最大结点数量，为0 代表该树无法再次使用
-	CClearTree(t)
+func (t *CTree) Destory() {
+	// 清空最大结点数量，为-1代表该树无法再次使用
+	t.maxsize = -1
+	t.Clear()
 	log.Printf("%v,%p", &t, t)
 }
 
 /*
 	保留树最大结点数量
 */
-func CClearTree(t *CTree) {
+func (t *CTree) Clear() {
 	t.n = 0
 	t.r = 0
 	t.nodes = make([]Cbox, 0)
@@ -102,7 +103,7 @@ func CCreateCBox(data dataTypeC) Cbox {
 */
 func CTreeEmpty(t *CTree) bool {
 	// maxsize如果为0 ，说明树可能已经被销毁了
-	if t.n == 0 && t.maxsize != 0 {
+	if t.n == 0 && t.maxsize > 0 {
 		return true
 	} else {
 		return false
