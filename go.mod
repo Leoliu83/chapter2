@@ -2,7 +2,7 @@ module gostudy
 
 go 1.16
 
-// 
 require (
-	golang.org/x/text v0.3.6
+	github.com/fsnotify/fsnotify v1.5.1
+	golang.org/x/text v0.3.7
 )

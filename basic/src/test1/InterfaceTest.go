@@ -36,6 +36,14 @@ import (
 		fun   [1]uintptr 	 // 实际对象方法地址
 	}
 	详细《Go语言学习笔记》p146
+
+	_type 表示类型信息。每个类型的 _type 信息由编译器在编译时生成。其中:
+	  * size 为该类型所占用的字节数量。
+	  * kind 表示类型的种类，如 bool、int、float、string、struct、interface 等。
+	  * str 表示类型的名字信息，它是一个 nameOff(int32) 类型，通过这个 nameOff，可以找到类型的名字字符串
+	  ○ extras 对于基础类型（如 bool，int, float 等）是 size 为 0 的，它为复杂的类型提供了一些额外信息。例如为 struct 类型提供 structtype，为 slice 类型提供 slicetype 等信息。
+	  ○ ucom 对于基础类型也是 size 为 0 的，但是对于 type Binary int 这种定义或者是其它复杂类型来说，ucom 用来存储类型的函数列表等信息。
+	注意 extras 和 ucom 的圆头箭头，它表示 extras 和 ucom 不是指针，它们的内容位于 _type 的内存空间中。
 */
 // InterfaceTest 测试接口类型
 func InterfaceTest() {

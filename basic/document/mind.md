@@ -87,3 +87,20 @@ go在运行时会创建多个线程来执行并发任务，而且任务可以调
 - 读写并发时，用WRMutex性能会更好
 - 对单个数据读写保护，可以使用原子操作，例如 atomic 包
 - 执行严格测试，尽可能打开数据竞争检查（Golang Data Race Detector）
+
+
+###### Hot Path
+A hot path is a sequence of instructions executed very frequently.
+
+When accessing the first field of a structure, we can directly dereference the pointer to the structure to access the first field. To access other fields, we need to provide an offset from the first value in addition to the struct pointer.
+
+In machine code, this offset is an additional value to pass with the instruction which makes it longer. The performance impact is that the CPU must perform an addition of the offset to the struct pointer to get the address of the value to access.
+
+Thus machine code to access the first field of a struct is more compact and faster.
+
+Note that this assumes that the layout of the field values in memory is the same as in the struct definition.
+
+In 'sync.Once' struct 'done uint32' indicates whether the action has been performed.
+It is first in the struct because it is used in the hot path.
+The hot path is inlined at every call site.
+Placing done first allows more compact instructions on some architectures (amd64/386), and fewer instructions (to calculate offset) on other architectures.

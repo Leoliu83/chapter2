@@ -13,8 +13,8 @@ type dataTypeP int
 	定义树的结点结构体
 */
 type PTreeNode struct {
-	data   dataTypeP // 结点数据
-	parent int       // 结点双亲所在的数组下标
+	Data   dataTypeP // 结点数据
+	Parent int       // 结点双亲所在的数组下标
 	_      struct{}  // 强制使使用者用属性名进行初始化
 }
 
@@ -22,8 +22,8 @@ type PTreeNode struct {
 	定义树结构体
 */
 type PTree struct {
-	maxsize int         // 最大结点数量
-	nodes   []PTreeNode // 结点数组
-	r, n    int         // r表示根的位置，n表示结点数
+	Maxsize int         // 最大结点数量
+	Nodes   []PTreeNode // 结点数组
+	R, N    int         // r表示根的位置，n表示结点数
 	_       struct{}    // 强制使使用者用属性名进行初始化
 }

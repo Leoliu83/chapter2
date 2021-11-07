@@ -59,14 +59,41 @@ graph TB
 A((*))
 B((L))
 C((L))
-A---B---C
+empty1(( ))
+empty2(( ))
+A---B
+A---empty1
+B---C
+B---empty2
+
+linkStyle 1 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 3 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
 ```
 ```mermaid
 graph TB
 A((*))
 B((R))
 C((R))
-A---B---C
+empty1(( ))
+empty2(( ))
+empty3(( ))
+A---empty1
+A---B
+empty1---empty3
+B---empty2
+B---C
+
+linkStyle 0 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 2 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+
+linkStyle 3 stroke:transparent
+style empty3 stroke:transparent,fill:transparent
 ```
 
 ```mermaid
@@ -74,17 +101,49 @@ graph TB
 A((*))
 B((L))
 C((R))
-A---B---C
-```
+empty1(( ))
+empty2(( ))
+empty3(( ))
+A---B
+A---empty1
+empty1---empty3
+B---empty2
+B---C
 
+linkStyle 1 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 2 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+
+linkStyle 3 stroke:transparent
+style empty3 stroke:transparent,fill:transparent
+```
 
 ```mermaid
 graph TB
 A((*))
 B((R))
 C((L))
-A---B---C
+empty1(( ))
+empty2(( ))
+empty3(( ))
+A---empty1
+A---B
+empty1---empty3
+B---C
+B---empty2
+
+linkStyle 0 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 2 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+
+linkStyle 4 stroke:transparent
+style empty3 stroke:transparent,fill:transparent
 ```
+
 由于有左右枝叶之分，因此有五种形态L表示左枝，R表示右枝
 
 ##### 特殊二叉树
@@ -263,6 +322,11 @@ B---E
 C---F
 C---G
 D---I
+D---empty1(( ))
+%%修改第3条线样式为透明%%
+linkStyle 7 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
 ```
 可以看到编号为8的结点和 **【图1】满二叉树** 的结点位置不相同，因此，这棵树不是完全二叉树。因为二叉树是分左枝和右枝的，这里去除的8是左枝，因此现在的8其实是右枝，所以和满二叉树的位置不同
 
@@ -384,23 +448,53 @@ type BiNode struct{
 ###### 二叉树的遍历方式
 ```mermaid
 graph TD
-A((1))
-B((2))
-C((3))
-D((4))
-E((5))
-F((6))
-G((7))
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
 A---B
 A---C
 B---D
-B---E
+B-.-empty1
+C---E
 C---F
-C---G
+D---G
+D---H
+E-.-empty2
+E---J
+%%下方修改透明，为了体现出二叉树的左右枝，第几条线是从上到下，从左到右开始数，从0开始%%
+%%修改第3条线样式为透明%%
+linkStyle 3 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
+
+%%修改第8条线样式为透明%%
+linkStyle 8 stroke:transparent
+%%修改第empty2结点样式为透明%%
+style empty2 stroke:transparent,fill:transparent
 ```
 1. 前序遍历
 （根在前，从左往右，一棵树的根永远在左子树前面，左子树又永远在右子树前面）
-$1 -> 2 -> 4 -> 5 -> 3 -> 6 -> 7$
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+A --> B --> D --> G --> H --> C --> E --> J --> F
+```
 代码示例：
 ```go
 // Node定义
@@ -415,15 +509,74 @@ func pre_order(root *Node){
     if root==nil {
         return
     }
+    fmt.Println(root.data)
     pre_order(root.left)
     pre_order(root.right)
 }
 ```
 
 
-2. 中序遍历
+1. 中序遍历
 （根在中，从左往右，一棵树的左子树永远在根前面，根永远在右子树前面）
-$4 -> 2 -> 5 -> 1 -> 6 -> 7 -> 3$
+图如下
+```mermaid
+graph TD
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+%%下方修改透明，为了体现出二叉树的左右枝，第几条线是从上到下，从左到右开始数，从0开始%%
+%%修改第3条线样式为透明%%
+linkStyle 3 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
+
+%%修改第8条线样式为透明%%
+linkStyle 8 stroke:transparent
+%%修改第empty2结点样式为透明%%
+style empty2 stroke:transparent,fill:transparent
+
+```
+其实：中序遍历可以想象成，按树画好的左右位置投影下来就可以了
+如上图树所示，D子树投影到平面的顺序为 G - D - H
+B投影到平面在H的后面
+A投影到平面在B的后面
+E投影到平面在A的后面，J的前面
+J投影到平面在E的后面
+C投影到平面在J的后面
+F投影到平面在C的后面
+形成的映射图如下，这也就是遍历顺序：
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+G --> D --> H --> B --> A --> E --> J --> C --> F
+```
+
 代码示例：
 ```go
 // Node定义
@@ -434,15 +587,331 @@ type Node struct{
     parent *Node
 }
 // 递归写法
-func pre_order(root *Node){
+func middle_order(root *Node){
     if root==nil {
         return
     }
-    pre_order(root.left)
-    pre_order(root.right)
+    middle_order(root.left)
+    fmt.Println(root.data)
+    middle_order(root.right)
 }
 ```
 
 3. 后序遍历
 （根在后，从左往右，一棵树的左子树永远在右子树前面，右子树永远在根前面）
-$4 -> 5 -> 2 -> 6 -> 7 -> 3 -> 1$
+```mermaid
+graph TD
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+%%下方修改透明，为了体现出二叉树的左右枝，第几条线是从上到下，从左到右开始数，从0开始%%
+%%修改第3条线样式为透明%%
+linkStyle 3 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
+
+%%修改第8条线样式为透明%%
+linkStyle 8 stroke:transparent
+%%修改第empty2结点样式为透明%%
+style empty2 stroke:transparent,fill:transparent
+```
+
+可以看成从最左段的子树开始剪枝，从左往右，先剪叶子后剪枝，最后就只剩根了
+例如上图的树结构，开始剪
+先剪G - H
+D上没有叶子了，再剪D
+B上没有枝了，再剪B
+根的左枝剪完了，开始剪右枝
+先剪J
+E上没有叶子了，再剪E
+再剪F
+C上没有枝叶了，再剪C
+A上没有枝叶了，再剪A
+最终遍历顺序如下
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+G --> H --> D --> B --> J --> E --> F --> C --> A
+```
+
+代码示例：
+```go
+// Node定义
+type Node struct{
+    int *data
+    left *Node
+    right *Node
+    parent *Node
+}
+// 递归写法
+func middle_order(root *Node){
+    if root==nil {
+        return
+    }
+    middle_order(root.left)
+    middle_order(root.right)
+    fmt.Println(root.data)
+}
+```
+
+1. 层序遍历
+（是按照从上到下，从左到右的顺序遍历。）
+```mermaid
+graph TD
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+%%下方修改透明，为了体现出二叉树的左右枝，第几条线是从上到下，从左到右开始数，从0开始%%
+%%修改第3条线样式为透明%%
+linkStyle 3 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
+
+%%修改第8条线样式为透明%%
+linkStyle 8 stroke:transparent
+%%修改第empty2结点样式为透明%%
+style empty2 stroke:transparent,fill:transparent
+```
+
+如上图数所示
+第一层 A
+第二层 B,C
+第三层 D,E,F
+第四层 G,H,J
+因此遍历顺序为：
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+A --> B --> C --> D --> E --> F --> G --> H --> J
+```
+
+
+2. 中序遍历
+从根节点开始，中序遍历访问根结点的左子树，然后是访问根结点，最后中序遍历右子树。
+
+（可以看成将画好的树从左到右投影到X轴平面上）
+```mermaid
+graph TD
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+%%下方修改透明，为了体现出二叉树的左右枝，第几条线是从上到下，从左到右开始数，从0开始%%
+%%修改第3条线样式为透明%%
+linkStyle 3 stroke:transparent
+%%修改第empty1结点样式为透明%%
+style empty1 stroke:transparent,fill:transparent
+
+%%修改第8条线样式为透明%%
+linkStyle 8 stroke:transparent
+%%修改第empty2结点样式为透明%%
+style empty2 stroke:transparent,fill:transparent
+```
+投影编号如下(注：每个子树的根结点的投影位置一定在子树的右侧)：
+```mermaid
+graph TD
+A((A,5))
+B((B,4))
+C((C,8))
+D((D,2))
+E((E,6))
+F((F,9))
+G((G,1))
+H((H,3))
+empty1(( ))
+empty2(( ))
+J((J,7))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+linkStyle 3 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 8 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+```
+
+因此遍历顺序为：
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+G --> D --> H --> B --> A --> E --> J --> C --> F
+```
+
+3. 后续遍历：
+按照从叶到根的顺序遍历访问左子树，然后同样的方式遍历右子树，最后是根
+
+(可以理解成从左到右的子树，先剪叶子，等叶子剪完了再剪根)
+剪顺序如下
+```mermaid
+graph TD
+A((A,9))
+B((B,4))
+C((C,8))
+D((D,3))
+E((E,6))
+F((F,7))
+G((G,1))
+H((H,2))
+empty1(( ))
+empty2(( ))
+J((J,5))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+linkStyle 3 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 8 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+```
+
+最终顺序如下：
+```mermaid
+graph LR
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+J((J))
+G --> H --> D --> B --> J --> E --> F --> C --> A
+```
+
+图的理解相对麻烦，代码就比较容易理解：
+```go
+// 前序遍历
+func PreOrder(root *BinaryTreeNode) {
+    if root == nil {
+        return
+    }
+    doSth(root.data) // 这里就是对数据的操作
+    PreOrder(root.left)
+    PreOrder(root.right)
+}
+// 中序遍历
+func MiddleOrder(root *BinaryTreeNode) {
+	if root == nil {
+		return
+	}
+	MiddleOrder(root.left)
+	doSth(root.data) // 这里就是对数据的操作
+	MiddleOrder(root.right)
+}
+// 后续遍历
+func PostOrder(root *BinaryTreeNode) {
+    if root == nil {
+        return
+    }
+    PostOrder(root.left)
+    PostOrder(root.right)
+    doSth(root.data) // 这里就是对数据的操作
+}
+
+// 层序遍历
+func LevelOrder(root *BinaryTreeNode) {
+    if root == nil {
+        return
+    }
+    doSth(root.data) // 这里就是对数据的操作
+    doSth(root.left)
+    doSth(root.right)
+    LevelOrder(root.left)
+    LevelOrder(root.right)
+}
+```
+从代码中可以看出，其实前中后就是在递归时候，实际的数据操作所在的位置。
