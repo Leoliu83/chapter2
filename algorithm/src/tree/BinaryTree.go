@@ -80,22 +80,129 @@ func PostOrder(root *BinaryTreeNode) {
 }
 
 /*
-	层序遍历
+	层序遍历（递归实现法）
+	思想：将所有同一层的结点同时处理，因此递归的函数参数是一个同一层结点的数组.
+         对于如下的树来说
+                   A
+         ┌─────────┴─────────┐
+         B                   C
+    ┌────┴────┐         ┌────┴────┐
+    D         E         F         G
+┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴───┐
+H       I J       K L       M N       O
+遍历A获取A下所有子节点，得到B,C作为下一次递归的参数
+遍历B,C获取B,C所有子节点，得到D,E,F,G作为下一次递归的参数
+遍历D,E,F,G获取D,E,F,G所有子节点，结果作为下一次递归的参数
+...
+以此类推
 */
-func LevelOrder(root *BinaryTreeNode) {
+func LevelOrder(root ...*BinaryTreeNode) {
+	nilCnt := 0
+	rootlen := len(root)
+	// 对于二叉树来说，一定是每一层的结点树一定是上一层结点的2倍，2倍问题都可以用移位替代
+	subNodes := make([]*BinaryTreeNode, rootlen<<1)
 	if root == nil {
 		return
 	}
-	fmt.Printf("%s -> ", string(OFFSET+root.left.data))
-	fmt.Printf("%s -> ", string(OFFSET+root.right.data))
-	LevelOrder(root.left)
-	LevelOrder(root.right)
-	// fmt.Printf("%s -> ", string(OFFSET+root.data))
+
+	for i, n := range root {
+		if n == nil {
+			nilCnt++
+			continue
+		}
+		fmt.Printf("%s -> ", string(OFFSET+n.data))
+		if n.left != nil {
+			subNodes[i<<1] = n.left
+		}
+		if n.right != nil {
+			subNodes[(i<<1)+1] = n.right
+		}
+	}
+	if nilCnt == rootlen {
+		return
+	}
+	// 尾递归，虽然golang没有尾递归优化，不过golang的栈空间可以达到2G
+	LevelOrder(subNodes...)
+}
+
+/* 队列的简单实现 ---- BEGIN */
+type QueueNode struct {
+	data *BinaryTreeNode
+	next *QueueNode
+}
+type InnerQueue struct {
+	front *QueueNode // 首结点
+	rear  *QueueNode // 尾结点
+}
+
+func (q *InnerQueue) InitQueue() {
+	qn := &QueueNode{}
+	q.front = qn
+	q.rear = q.front
+}
+
+func (q *InnerQueue) Push(node *BinaryTreeNode) {
+	qn := &QueueNode{data: node}
+	q.rear.next = qn
+	q.rear = qn
+}
+
+func (q *InnerQueue) Pop() {
+	q.front = q.front.next
+}
+
+func (q *InnerQueue) isEmpty() bool {
+	return q.front == q.rear
+}
+
+/* 队列的简单实现 ---- END */
+
+/*
+	层序遍历(队列实现法)
+	思想，将每一层的结点放入队列，然后依次取出
+         对于如下的树来说
+                   A
+         ┌─────────┴─────────┐
+         B                   C
+    ┌────┴────┐         ┌────┴────┐
+    D         E         F         G
+┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴───┐
+H       I J       K L       M N       O
+先将A结点Push进队列，则A为队列的front.next；因为这里用的队列的第一个元素为空元素
+获取当前front.next(也就是B)的子节点B,C，依次放入队列，此时队列里是 A->B->C
+将A结点Pop出队列，此时B变为front.next，此时队列里是B->C
+获取当前front.next(也就是B)的子节点D,E，依次放入队列，此时队列里是B->C->D->E
+将B结点Pop出队列，此时C变为front.next，此时队列里是C->D->E
+获取当前front.next(也就是C)的子节点F,G，依次放入队列，此时队列里是C->D->E->F->G
+将C结点Pop出队列，此时D变为front.next，此时队列里是D->E->F->G
+...
+以此类推
+*/
+func LevelOrderQueue(root *BinaryTreeNode) {
+	var q InnerQueue
+	q.InitQueue()
+	q.Push(root)
+	if root == nil {
+		return
+	}
+
+	// 当队列不为空时，循环
+	for !q.isEmpty() {
+		fmt.Printf("%s -> ", string(OFFSET+q.front.next.data.data))
+		if q.front.next.data.left != nil {
+			q.Push(q.front.next.data.left)
+		}
+		if q.front.next.data.right != nil {
+			q.Push(q.front.next.data.right)
+		}
+		q.Pop()
+	}
+	fmt.Printf("%s\n", "END")
 }
 
 /*
-	暂时写死，作测试使用，后续修改成动态打印
-	只写了3层打印，主要是一些二叉树的操作等
+	TODO
+	打印二叉树，未实现
 */
 func PrintBinaryTreeOrigin(bt *BinaryTreeNode, isroot bool) {
 	fmt.Printf("%19s%d\n", "", bt.data)

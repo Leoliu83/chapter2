@@ -903,15 +903,53 @@ func PostOrder(root *BinaryTreeNode) {
 }
 
 // 层序遍历
-func LevelOrder(root *BinaryTreeNode) {
-    if root == nil {
-        return
-    }
-    doSth(root.data) // 这里就是对数据的操作
-    doSth(root.left)
-    doSth(root.right)
-    LevelOrder(root.left)
-    LevelOrder(root.right)
+func LevelOrder(root *BinaryTreeNode) { 
 }
 ```
 从代码中可以看出，其实前中后就是在递归时候，实际的数据操作所在的位置。
+层序遍历相对比较复杂，这里不做过多说明
+
+##### 线索二叉树
+###### 定义
+每个结点上，指向前驱和后继的指针称为**线索**
+加上线索的二叉链表称为**线索链表**，相应的二叉树就称为**线索二叉树**
+对二叉树以某种次序遍历，使其变为线索二叉树的过程，称为**线索化**
+
+###### 例子
+```mermaid
+graph TD
+A((A))
+B((B))
+C((C))
+D((D))
+E((E))
+F((F))
+G((G))
+H((H))
+empty1(( ))
+empty2(( ))
+J((J))
+A---B
+A---C
+B---D
+B-.-empty1
+C---E
+C---F
+D---G
+D---H
+E-.-empty2
+E---J
+linkStyle 3 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+linkStyle 8 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+``` 
+对上面的树做中序遍历得到：
+G --> D --> H --> B --> A --> E --> J --> C --> F
+由于 G的后继是D，且G的右孩子结点为空，因此就可以将D的指针放入G的右孩子结点
+同理 H的后继是B，前驱是D，因此可以将B的指针放入H的左孩子结点，而D的指针放入H的右孩子结点
+再看 E的前驱是A，而且E没有右孩子结点，因此可以将A的指针放入E的右孩子结点
+这样就将所有的空指针利用起来了（因为空指针也占用地址、内存空间）
+因此将二叉树线索化可以有效的利用空地址
+

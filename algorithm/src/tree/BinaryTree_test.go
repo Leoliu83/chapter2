@@ -43,3 +43,29 @@ func TestLevelOrderBinaryTree(t *testing.T) {
 	LevelOrder(bt)
 	fmt.Println()
 }
+
+func TestLevelOrderQueueBinaryTree(t *testing.T) {
+	bt := CreateRoot(1)
+	CreateBinaryTree(bt, 1)
+	PrintBinaryTreeChar(bt, true)
+	LevelOrderQueue(bt)
+	fmt.Println()
+}
+
+func TestPrintBinaryTreeChar(t *testing.T) {
+	type args struct {
+		bt     *BinaryTreeNode
+		isroot bool
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			PrintBinaryTreeChar(tt.args.bt, tt.args.isroot)
+		})
+	}
+}

@@ -43,6 +43,7 @@ func (lq *LinkedQueue) EnterQueue(i int) {
 func (lq *LinkedQueue) DeleteQueue() {
 	if lq.front == lq.rear {
 		log.Println("Queue is empty!")
+		return
 	}
 	lq.front = lq.front.Next // 将下一个结点复制给当前结点
 }

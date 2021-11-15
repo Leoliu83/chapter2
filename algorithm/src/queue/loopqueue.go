@@ -7,11 +7,11 @@ import "log"
 */
 type LoopQueue struct {
 	Data    []int
-	Front   int
-	Rear    int
-	MaxLen  int
-	IsFull  bool
-	IsEmpty bool
+	Front   int  // 队列头
+	Rear    int  // 队列尾
+	MaxLen  int  // 最大长度
+	IsFull  bool // 队列是否已满
+	IsEmpty bool // 是否为空队列
 }
 
 func (lq *LoopQueue) InitQueue(n int) {
@@ -25,6 +25,7 @@ func (lq *LoopQueue) InitQueue(n int) {
 
 /*
 	入队，这里引入 IsFull 和 IsEmpty 变量，
+	或者也可以使用变量count来保存元素个数，如果count=MaxLen 则说明满了，如果count=0说明空了
 	而不像文中那样直接用 (lq.Rear+1)%lq.MaxLen == lq.Front 判断
 	因为如果直接判断会导致最后一个数组位置无法填充数字，造成浪费
 	即，当 lq.Rear = 3 时，执行完EnterQueue，此时lq.Rear变为4，

@@ -27,13 +27,20 @@ func FbiFor() {
 }
 
 /*
-	递归版本的斐波那数列
+	递归版本的斐波那数列 Fibonacci Sequence
+	@param int 打印多少个数
 */
-func FbiRecursion(x1 int, x2 int, n int) {
-	if n == 40 {
-		return
+func FbiRecursion(cnt int) {
+	i := 0
+	// 定义一个递归函数
+	var once func(a int, b int)
+	once = func(a int, b int) {
+		if i >= cnt {
+			return
+		}
+		i++
+		once(b, a+b)
 	}
-	n++
-	log.Println(x2)
-	FbiRecursion(x2, x1+x2, n)
+	// 递归调用，求Fibonacci Sequence
+	once(0, 1)
 }

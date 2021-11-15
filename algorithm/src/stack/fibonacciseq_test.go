@@ -9,5 +9,5 @@ func TestFbiFor(t *testing.T) {
 }
 
 func TestFbiRecursion(t *testing.T) {
-	FbiRecursion(0, 1, 1)
+	FbiRecursion(10)
 }
