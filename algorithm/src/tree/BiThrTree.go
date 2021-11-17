@@ -18,14 +18,19 @@ const (
 )
 
 func init() {
-	halfBranchLenList = CaculateHalfBranchLenth(10)
+	queuecnt := 0
+	for i := (2 << MAXLEVEL); (i >> 1) != 0; {
+		queuecnt += i
+	}
+	log.Println("queuecnt: ", queuecnt)
+	halfBranchLenList = CaculateHalfBranchLenth(queuecnt)
 }
 
 /*
 	线索二叉树定义
 */
 type BiThrTreeNode struct {
-	data           int            // 数据
+	Data           int            // 数据
 	lchild, rchild *BiThrTreeNode // 左右指针域
 	ltype          int            // 左指针域类型，枚举值（Link，Thread）
 	rtype          int            // 右指针域类型，枚举值（Link，Thread）
@@ -35,15 +40,20 @@ func CreateBiThrTreeNode(root *BiThrTreeNode, lv int) {
 	if lv > MAXLEVEL {
 		return
 	}
-	if root.data == 4 {
-		root.lchild = nil
-		root.rchild = nil
-	} else {
-		root.lchild = &BiThrTreeNode{data: root.data * 2}
-		root.rchild = &BiThrTreeNode{data: root.data*2 + 1}
+	// if root == nil {
+	// 	return
+	// }
+	// if root.Data == 4 {
+	// 	root.lchild = nil
+	// 	root.rchild = nil
+	// } else {
+	// 	root.lchild = &BiThrTreeNode{Data: root.Data * 2}
+	// 	root.rchild = &BiThrTreeNode{Data: root.Data*2 + 1}
 
-	}
-
+	// }
+	root.lchild = &BiThrTreeNode{Data: root.Data * 2}
+	root.rchild = &BiThrTreeNode{Data: root.Data*2 + 1}
+	log.Printf("currentLevel: %d", lv)
 	CreateBiThrTreeNode(root.lchild, lv+1)
 	CreateBiThrTreeNode(root.rchild, lv+1)
 
@@ -93,11 +103,11 @@ func (root *BiThrTreeNode) PrintNonQueue() [][]int {
 		if array[0] != nil {
 			if array[0].lchild != nil {
 				array = append(array, array[0].lchild)
-				subRes = append(subRes, array[0].lchild.data)
+				subRes = append(subRes, array[0].lchild.Data)
 			}
 			if array[0].rchild != nil {
 				array = append(array, array[0].rchild)
-				subRes = append(subRes, array[0].rchild.data)
+				subRes = append(subRes, array[0].rchild.Data)
 			}
 			if len(subRes) > 0 {
 				result = append(result, subRes)
@@ -113,7 +123,7 @@ func (root *BiThrTreeNode) PrintNonQueue() [][]int {
 
 /*
 	TODO
-	打印二叉树，未实现
+	打印二叉树，未完成
 	两个枝之间只有一个空格，未处理
 */
 func (root *BiThrTreeNode) Print(maxLevel int) {
@@ -124,9 +134,41 @@ func (root *BiThrTreeNode) Print(maxLevel int) {
 	var spaceCount, halfBranchLen int = 0, 0
 	var str bytes.Buffer
 	var queue NodeQueue
+	var formtStr string
 	queue.Init(20)
 	queue.Push(root)
+
+	// idx 从1开始, 打印一个结点
+	printOne := func(maxLv int, currentLv int, idx int, s string) {
+		// fmt.Printf("currentLv: %d", currentLv)
+		halfBranchLen = halfBranchLenList[maxLevel-currLevel]
+		if currLevel == maxLevel {
+			spaceCount = 0
+		} else {
+			spaceCount = halfBranchLen
+		}
+		if idx&1 == 1 { // 非2的倍数，也就是左枝
+			// 左空格补齐(由于fmt.Sprintf不能处理0空格的情况，至少会出现一个空格，因此这里用循环)
+			for i := 0; i < spaceCount; i++ {
+				str.WriteString(" ")
+			}
+			// 例如底层的枝 ┌───┴───┐ halfBranchLen 就是 ┌─── 中的 ─ 的数量也就是3
+			//
+			// 向后补空格，halfBranchLen+1 因为除了空格，还必须包含1位数字
+			formtStr = "%-" + fmt.Sprintf("%d", halfBranchLen+1) + "s"
+			str.WriteString(fmt.Sprintf(formtStr, s))
+		} else { // 如果是右枝
+			// 向前补空格，halfBranchLen+2 因为除了空格以及┴所占用的1个字节，还必须包含1位数字
+			formtStr = "%" + fmt.Sprintf("%d", halfBranchLen+2) + "s"
+			str.WriteString(fmt.Sprintf(formtStr, s))
+			// 向后补空
+			formtStr = "%-" + fmt.Sprintf("%d", spaceCount+1) + "s"
+			str.WriteString(fmt.Sprintf(formtStr, " "))
+		}
+	}
+
 	for i := 1; !queue.isEmpty(); i++ {
+		// log.Printf("max: %d,current: %d", maxLevel, currLevel)
 		if currLevel > maxLevel {
 			break
 		}
@@ -135,28 +177,15 @@ func (root *BiThrTreeNode) Print(maxLevel int) {
 		if !ok {
 			return
 		}
-		// fmt.Printf("currLevel: %d -> ", currLevel)
-		halfBranchLen = halfBranchLenList[maxLevel-currLevel]
-		if currLevel == maxLevel {
-			spaceCount = 0
-		} else {
-			spaceCount = halfBranchLen
-		}
 
-		for j := 0; j < spaceCount; j++ {
-			str.WriteString(" ")
-		}
 		if currentNode == nil {
-			str.WriteString("-")
-			for j := 0; j < halfBranchLen+1; j++ {
-				str.WriteString(" ")
-			}
-			continue
+			printOne(maxLevel, currLevel, i, "-")
+		} else {
+			printOne(maxLevel, currLevel, i, fmt.Sprintf("%d", currentNode.Data))
 		}
 
-		str.WriteString(fmt.Sprintf("%d", currentNode.data))
-		for j := 0; j < halfBranchLen+1; j++ {
-			str.WriteString(" ")
+		if currentNode == nil {
+			continue
 		}
 		queue.Push(currentNode.lchild)
 		queue.Push(currentNode.rchild)
@@ -166,6 +195,7 @@ func (root *BiThrTreeNode) Print(maxLevel int) {
 			currLevel++
 			fmt.Println(str.String())
 			str.Reset()
+			PrintBranch(maxLevel, currLevel)
 		}
 		// fmt.Printf("nodeCount: %d \n", nodeCount)
 	}
@@ -175,9 +205,16 @@ func (root *BiThrTreeNode) Print(maxLevel int) {
 
 var halfBranchLenList []int
 
+/*
+	打印枝干
+*/
 func PrintBranch(maxLevel int, currLevel int) {
+	if currLevel > maxLevel {
+		return
+	}
 	nodeCount := 1 << currLevel
 	idx := maxLevel - currLevel
+	// log.Print(maxLevel, currLevel, idx)
 	halfBranchLen := halfBranchLenList[idx]
 	var spaceCount int
 	// 如果是最底层，则左边的空格数为1，否则左边的空格数等于
@@ -241,31 +278,31 @@ func CaculateHalfBranchLenth(cnt int) []int {
 }
 
 func PrintBinaryBad(bt *BiThrTreeNode) {
-	fmt.Printf("%19s%d\n", "", bt.data)
+	fmt.Printf("%19s%d\n", "", bt.Data)
 	// level 1
 	ln, rn := bt.lchild, bt.rchild
 	// level 2
 	// ┌───────── 长度为10，叶子结点长度的1/4
 	fmt.Printf("%9s┌─────────┴─────────┐\n", "")
 	// %19s是┌─────────┴─────────┐长度-2也就是去掉两头的┌和┐
-	fmt.Printf("%9s%d%19s%d \r\n", "", ln.data, "", rn.data)
+	fmt.Printf("%9s%d%19s%d \r\n", "", ln.Data, "", rn.Data)
 	// level 3
 	// ┌──── 长度为5
 	fmt.Printf("%4s┌────┴────┐%9s┌────┴────┐\r\n", "", "")
 	// %9s是┌────┴────┐长度-2也就是去掉两头的┌和┐
-	fmt.Printf("%4s%d%9s%d%9s%d%9s%d\r\n", "", ln.lchild.data, "", ln.rchild.data, "", rn.lchild.data, "", rn.rchild.data)
+	fmt.Printf("%4s%d%9s%d%9s%d%9s%d\r\n", "", ln.lchild.Data, "", ln.rchild.Data, "", rn.lchild.Data, "", rn.rchild.Data)
 	// level 4
 	// ┌─── 长度为4
 	fmt.Printf("%0s┌───┴───┐%1s┌───┴───┐%1s┌───┴───┐%1s┌───┴───┐\r\n", "", "", "", "")
 	fmt.Printf("%0s%-2d%5s%2d%1s%-2d%5s%2d%1s%-2d%5s%2d%1s%-2d%5s%2d \r\n",
 		"", ln.lchild.lchild,
 		"", ln.lchild.rchild,
-		"", ln.rchild.lchild.data,
-		"", ln.rchild.rchild.data,
-		"", rn.lchild.lchild.data,
-		"", rn.lchild.rchild.data,
-		"", rn.rchild.lchild.data,
-		"", rn.rchild.rchild.data,
+		"", ln.rchild.lchild.Data,
+		"", ln.rchild.rchild.Data,
+		"", rn.lchild.lchild.Data,
+		"", rn.lchild.rchild.Data,
+		"", rn.rchild.lchild.Data,
+		"", rn.rchild.rchild.Data,
 	)
 
 }
