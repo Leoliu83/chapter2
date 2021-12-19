@@ -30,7 +30,48 @@ e.g.
     }()
 ```
 
+##### go 时间格式化
+golang时间格式化并不采用类似 yyyymmdd 这种方式，因为这样方式在每种语言中都可能不同
+golang采用了固定的具体时间串的方式来作为解析时间的format string
+例如：2006-01-02 03:04:05.999999(12小时制)
+这其实就表示：(oracle)yyyy-mm-dd hh:mi:ss.ff6 (java)yyyy-MM-dd hh:mm:dd.SSSSSS
 
+例如：2006-01-02 15:04:05.999999(24小时制)
+这其实就表示：(oracle)yyyy-mm-dd hh24:mi:ss.ff6 (java)yyyy-MM-dd HH:mm:dd.SSSSSS
+
+```
+月份 1,01,Jan,January
+日   2,02,_2
+时   3,03,15,PM,pm,AM,am
+分   4,04
+秒   5,05
+年   06,2006
+时区 -07,-0700,Z0700,Z07:00,-07:00,MST
+周几 Mon,Monday
+
+3 用12小时制表示，去掉前导0
+03 用12小时制表示，保留前导0
+15 用24小时制表示，保留前导0
+03pm 用24小时制am/pm表示上下午表示，保留前导0
+3pm 用24小时制am/pm表示上下午表示，去掉前导0
+
+1 数字表示月份，去掉前导0
+01 数字表示月份，保留前导0
+Jan 缩写单词表示月份
+January 全单词表示月份
+```
+
+```
+ The layout string used by the Parse function and Format method
+ shows by example how the reference time should be represented.
+ We stress that one must show how the reference time is formatted,
+ not a time of the user's choosing. Thus each layout string is a
+ representation of the time stamp,
+	Jan 2 15:04:05 2006 MST
+ An easy way to remember this value is that it holds, when presented
+ in this order, the values (lined up with the elements above):
+	  1 2  3  4  5    6  -7
+```
 ##### go log printf格式化详细说明
 ``` go
 /********************************************************************

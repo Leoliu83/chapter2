@@ -25,6 +25,31 @@ import (
 
 	<-channel 通道接收数据操作只执行一次，不会反复接收，需要使用for循环多次调用 <-channel
 	close 也是一种信号，因此发送close也必须等待前面的信息都接收完成才可被接收到，因此不会出现close后丢失close前的消息的情况
+
+	1、扇入（Fan in）
+	指的是将多路通道聚合到一条通道中处理。在golang中最简单的扇入就是使用select聚合多条通道服务；
+	当生产者的速度很慢时，需要使用扇入技术聚合多个生产者满足消费者。
+
+	2、扇出（Fan out）
+	指的是将一条通道发散到多条通道中处理，在golang中的具体实现就是使用go关键字启动多个goroutine并发处理。
+	当消费者的速度很慢时，需要使用扇出技术来并发处理请求。
+
+	chanOut1 到 chanIn,chanOut2 到 chanIn：
+
+	chanIn := make(chan int)
+	chanOut1 := make(chan int)
+	chanOut2 := make(chan int)
+	select {
+		case chanIn <- <-chanOut1:
+		case chanIn <- <-chanOut2:
+	}
+	上面select的'<- <-' 写法等同于
+	select {
+		case data1:= <-chanOut1:
+			chanIn<-data1
+		case data2:= <-chanOut2:
+			chanIn<-data2
+	}
 */
 func ChannelSyncTest() {
 	done := make(chan struct{})

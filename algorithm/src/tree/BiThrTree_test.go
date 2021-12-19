@@ -5,11 +5,11 @@ import (
 )
 
 func TestMiddleOrderThread(t *testing.T) {
-	// root := &BiThrTreeNode{data: 1}
-	// t.Logf("%+v", root)
-	// CreateBiThrTreeNode(root, 1)
-	// PrintBinaryBad(root)
-	// root.Print(MAXLEVEL)
+	InitQueueCnt()
+	root := &BiThrTreeNode{Data: 1}
+	t.Logf("%+v", root)
+	CreateBiThrTreeNode(root, 1)
+	root.Print(MAXLEVEL)
 }
 
 func TestPrintBranch(t *testing.T) {

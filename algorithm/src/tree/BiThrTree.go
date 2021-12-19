@@ -17,14 +17,28 @@ const (
 	Thread
 )
 
+/*
+	init中尽量不要放复杂逻辑，因为不好调试，出了类似死循环或者hang死的逻辑，比较难定位问题
+*/
 func init() {
+	// InitQueueCnt()
+}
+
+/*
+	根据树的高度计算队列长度
+*/
+func InitQueueCnt() {
 	queuecnt := 0
-	for i := (2 << MAXLEVEL); (i >> 1) != 0; {
+	for i := (2 << MAXLEVEL); i != 0; i >>= 1 {
+		// log.Println(queuecnt)
 		queuecnt += i
 	}
 	log.Println("queuecnt: ", queuecnt)
-	halfBranchLenList = CaculateHalfBranchLenth(queuecnt)
+	halfBranchLenList = CaculateHalfBranchLenth(MAXLEVEL)
+	queue.Init(queuecnt)
 }
+
+var queue NodeQueue
 
 /*
 	线索二叉树定义
@@ -37,7 +51,7 @@ type BiThrTreeNode struct {
 }
 
 func CreateBiThrTreeNode(root *BiThrTreeNode, lv int) {
-	if lv > MAXLEVEL {
+	if lv >= MAXLEVEL {
 		return
 	}
 	// if root == nil {
@@ -53,7 +67,7 @@ func CreateBiThrTreeNode(root *BiThrTreeNode, lv int) {
 	// }
 	root.lchild = &BiThrTreeNode{Data: root.Data * 2}
 	root.rchild = &BiThrTreeNode{Data: root.Data*2 + 1}
-	log.Printf("currentLevel: %d", lv)
+	// log.Printf("currentLevel: %d", lv)
 	CreateBiThrTreeNode(root.lchild, lv+1)
 	CreateBiThrTreeNode(root.rchild, lv+1)
 
@@ -127,15 +141,15 @@ func (root *BiThrTreeNode) PrintNonQueue() [][]int {
 	两个枝之间只有一个空格，未处理
 */
 func (root *BiThrTreeNode) Print(maxLevel int) {
+	// 层数是从0开始，因此如果总层数是4，那么最高层数就是3，而不是4
+	maxLevel = maxLevel - 1
 	fmt.Println(halfBranchLenList)
 	// 二叉树是标准的，的每层的结点树是可以计算出来的
 	var nodeCount int = 1
 	var currLevel int = 0
 	var spaceCount, halfBranchLen int = 0, 0
 	var str bytes.Buffer
-	var queue NodeQueue
 	var formtStr string
-	queue.Init(20)
 	queue.Push(root)
 
 	// idx 从1开始, 打印一个结点
@@ -207,6 +221,7 @@ var halfBranchLenList []int
 
 /*
 	打印枝干
+	也是就是树结构中的  ┌───┴───┐ 这些非数据部分
 */
 func PrintBranch(maxLevel int, currLevel int) {
 	if currLevel > maxLevel {
@@ -249,62 +264,6 @@ func PrintBranch(maxLevel int, currLevel int) {
 		writeOneBranch()
 	}
 	fmt.Println()
-}
-
-/*
-	计算打印树枝 ┌────┴────┐ 中 '─' 数量的一半,并返回数组
-	推导：
-	0 表示最低层，打印叶子结点所需要的 ┌────┴────┐
-	f(0) = 3
-	f(1) = f(0)+1 // 倒数第2层
-	f(2) = f(0)+1+f(1)+1 // 倒数第3层
-	f(3) = f(0)+1+f(1)+1+f(2)+1 = f(2)+f(2)+1 // 倒数第4层
-	f(4) = f(0)+1+f(1)+1+f(2)+1+f(3)+1 = f(3)+f(3)+1 // 倒数第5层
-	......
-	一直到 root 也就是根
-
-	@param cnt 表示打印多少层
-*/
-func CaculateHalfBranchLenth(cnt int) []int {
-	hbl := make([]int, cnt)
-	hbl[0] = 3
-	hbl[1] = 4
-	for i := 2; i < cnt; i++ {
-		// 等于 [前一个数]×2+1
-		hbl[i] = hbl[i-1]<<1 + 1
-	}
-	// log.Println(hbl)
-	return hbl
-}
-
-func PrintBinaryBad(bt *BiThrTreeNode) {
-	fmt.Printf("%19s%d\n", "", bt.Data)
-	// level 1
-	ln, rn := bt.lchild, bt.rchild
-	// level 2
-	// ┌───────── 长度为10，叶子结点长度的1/4
-	fmt.Printf("%9s┌─────────┴─────────┐\n", "")
-	// %19s是┌─────────┴─────────┐长度-2也就是去掉两头的┌和┐
-	fmt.Printf("%9s%d%19s%d \r\n", "", ln.Data, "", rn.Data)
-	// level 3
-	// ┌──── 长度为5
-	fmt.Printf("%4s┌────┴────┐%9s┌────┴────┐\r\n", "", "")
-	// %9s是┌────┴────┐长度-2也就是去掉两头的┌和┐
-	fmt.Printf("%4s%d%9s%d%9s%d%9s%d\r\n", "", ln.lchild.Data, "", ln.rchild.Data, "", rn.lchild.Data, "", rn.rchild.Data)
-	// level 4
-	// ┌─── 长度为4
-	fmt.Printf("%0s┌───┴───┐%1s┌───┴───┐%1s┌───┴───┐%1s┌───┴───┐\r\n", "", "", "", "")
-	fmt.Printf("%0s%-2d%5s%2d%1s%-2d%5s%2d%1s%-2d%5s%2d%1s%-2d%5s%2d \r\n",
-		"", ln.lchild.lchild,
-		"", ln.lchild.rchild,
-		"", ln.rchild.lchild.Data,
-		"", ln.rchild.rchild.Data,
-		"", rn.lchild.lchild.Data,
-		"", rn.lchild.rchild.Data,
-		"", rn.rchild.lchild.Data,
-		"", rn.rchild.rchild.Data,
-	)
-
 }
 
 /************** 下面是结点队列的实现 *******************/

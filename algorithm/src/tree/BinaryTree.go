@@ -5,7 +5,7 @@ import (
 	// "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 )
 
-var MAXLEVEL int = 3
+var MAXLEVEL int = 4
 var OFFSET rune = 64
 
 /*
