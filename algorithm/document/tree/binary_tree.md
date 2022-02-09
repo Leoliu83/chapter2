@@ -66,6 +66,17 @@ A---empty1
 B---C
 B---empty2
 
+%% linkStyle 后面的数字，是上述关系列表，从上到下，从0开始数
+%% 这里关系表从上到下依次是：
+%%     A---B        <-- 0
+%%     A---empty1   <-- 1
+%%     B---C        <-- 2
+%%     B---empty2   <-- 3
+%% 在这里要设置 A---B 的线的样式，则 linkStyle 0
+%% 在这里要设置 A---empty1 的线的样式，则 linkStyle 1
+%% 在这里要设置 B---C 的线的样式，则 linkStyle 2
+%% 在这里要设置 B---empty2 的线的样式，则 linkStyle 3
+
 linkStyle 1 stroke:transparent
 style empty1 stroke:transparent,fill:transparent
 
@@ -208,6 +219,44 @@ G---O
      5. 同样结点数的二叉树，完全二叉树的深度最小
 
 满二叉树一定是一棵完全二叉树，完全二叉树不一定是一棵满二叉树
+
+##### 完全二叉树的结点n和高度h的关系
+$设结点n与高度h的关系为h=f(n)$
+$h=f(n)$的关系不好找，但是$n=f(h)的关系比较好找$
+$$
+\left\{
+\begin{aligned}
+&当h=1时，n=1(2^0) \\
+&当h=2时，n=3(2^0+2^1) \\
+&当h=3时，n=7(2^0+2^1+2^2) \\
+&当h=x时，n=y(2^0+2^1+\dotsb+2^{x-1}) \\
+\end{aligned}
+\right.
+$$
+
+问题就变成了化简$h=2^0+2^1+\dotsb+2^{n-1}$
+这个问题如何化简，其实可以看到，每一个数都是$2^n$形式
+并且
+$2^0+2^0=2^1$
+$2^{1}+2^{1}=2^{2}$
+$2^{2}+2^{2}=2^{3}$
+$\dotsb$
+观察$2^0+2^1+2^2+\dotsb+2^n$，如果加一个$2^0$，则
+$
+\begin{aligned}
+2^0+2^0+2^1+2^2+\dotsb+2^n& \\
+=2^1+2^1+2^2+\dotsb+2^n& \\
+=2^2+2^2+\dotsb+2^n& \\
+\dotsb& \\
+=2^{n-1}+2^{n-1}& \\
+=2^n&
+\end{aligned}
+$
+多加的$2^0$要减去,则：
+$2^n-2^0 = 2^n-1$
+$∴n=2^h-1$
+$∴h=\log_2{(n+1)}$
+
 
 ##### 举例说明
 **下图是一个“按层序标号”的二叉树**
@@ -909,6 +958,85 @@ func LevelOrder(root *BinaryTreeNode) {
 从代码中可以看出，其实前中后就是在递归时候，实际的数据操作所在的位置。
 层序遍历相对比较复杂，这里不做过多说明
 
+
+###### 树的操作
+1. Insert
+树的insert操作一定是发生在叶子结点，
+例如：
+insert(10)
+insert(8)
+insert(6)
+insert(7)
+
+```mermaid
+graph TD
+subgraph insert: 10
+A((10))
+end
+``` 
+
+```mermaid
+graph TD
+subgraph insert: 8
+A((10))
+B((8))
+empty1(( ))
+A---B
+A---empty1
+
+linkStyle 1 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+end
+``` 
+
+```mermaid
+graph TD
+subgraph insert: 6
+A((10))
+B((8))
+C((6))
+empty1(( ))
+empty2(( ))
+A---B
+A---empty1
+B---C
+B---empty2
+
+linkStyle 1 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+linkStyle 3 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+
+end
+``` 
+
+```mermaid
+graph TD
+subgraph insert: 7
+A((10))
+B((8))
+C((6))
+D(( ))
+E((7))
+empty1(( ))
+empty2(( ))
+A---B
+A---empty1
+B---C
+B---empty2
+C---E
+C---D
+
+linkStyle 1 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+linkStyle 3 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+linkStyle 5 stroke:transparent
+style D stroke:transparent,fill:transparent
+
+end
+``` 
+
 ##### 线索二叉树
 ###### 定义
 每个结点上，指向前驱和后继的指针称为**线索**
@@ -953,3 +1081,332 @@ G --> D --> H --> B --> A --> E --> J --> C --> F
 这样就将所有的空指针利用起来了（因为空指针也占用地址、内存空间）
 因此将二叉树线索化可以有效的利用空地址
 
+##### 平衡二叉树（AVL tree : Adelson-Velskii-Landis tree）
+这类二叉树是一个增加了“平衡”的规则，也就是“左右子树的高度最多差1”
+如下这棵树
+```mermaid
+graph TD
+A((18))
+B((14))
+C((20))
+D((12))
+E((16))
+A---B
+A---C
+B---D
+B---E
+``` 
+如果插入新结点 11
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((12))
+E((16))
+F((11))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+D-.-F
+D-.-empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+这个时候，这个数左枝就违反了平衡二叉树的规则，因此需要对当前树做处理
+
+破坏平衡的情况，大致可以分为一下几种
+1. LL (新结点挂在root的左节点的左子树上)
+就是上述情况
+2. RR (新结点挂在root的右节点的右子树上)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((20))
+E((24))
+F((25))
+empty1(( ))
+A---B
+A---C
+C---D
+C---E
+E-.-empty1
+E-.-F
+
+linkStyle 4 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+RR与LL的情况是完全对称的
+
+3. LR (新结点挂在root的左节点的右子树上)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((12))
+E((16))
+F((15))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+E---F
+E---empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+
+4. RL (新结点挂在root的左节点的右子树上)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((20))
+E((24))
+F((21))
+empty1(( ))
+A---B
+A---C
+C---D
+C---E
+D---F
+D---empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+
+对于上述4种破坏平衡的问题，可以通过旋转来处理。
+基本旋转动图展示
+左旋
+![Alt Text](left_rotate.gif)
+右旋
+![Alt Text](right_rotate.gif)
+
+1. LL (右旋转)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((12))
+E((16))
+F((11))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+D-.-F
+D-.-empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+```
+**右旋转后**
+```mermaid
+graph TD
+A((14))
+B((12))
+C((18))
+D((16))
+E((22))
+F((11))
+empty1(( ))
+A---B
+A---C
+C---D
+C---E
+B-.-F
+B-.-empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+```
+
+2. RR (左旋转)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((20))
+E((24))
+F((25))
+empty1(( ))
+A---B
+A---C
+C---D
+C---E
+E-.-empty1
+E-.-F
+
+linkStyle 4 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+**左旋转后**
+```mermaid
+graph TD
+A((22))
+B((18))
+C((24))
+D((14))
+E((20))
+F((25))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+C-.-empty1
+C-.-F
+
+linkStyle 4 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+
+3. LR (先左旋，后右旋)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((12))
+E((16))
+F((15))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+E---F
+E---empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+**先左旋(14结点)**
+```mermaid
+graph TD
+A((18))
+B((16))
+C((22))
+D((14))
+E((15))
+F((12))
+empty1(( ))
+A---B
+A---C
+B---D
+D---F
+D---E
+B---empty1
+
+linkStyle 5 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+
+
+**后右旋(16结点)**
+```mermaid
+graph TD
+A((16))
+B((14))
+C((18))
+D((12))
+E((15))
+F((22))
+empty1(( ))
+A---B
+A---C
+B---D
+B---E
+C---empty1
+C---F
+
+linkStyle 4 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+4. RL (先右旋，后左旋)
+```mermaid
+graph TD
+A((18))
+B((14))
+C((22))
+D((20))
+E((24))
+F((21))
+empty1(( ))
+A---B
+A---C
+C---D
+C---E
+D---empty1
+D---F
+
+linkStyle 4 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+```
+
+**先右旋(22-20结点)**
+```mermaid
+graph TD
+A((18))
+B((14))
+C((20))
+D((21))
+E((22))
+F((24))
+empty1(( ))
+empty2(( ))
+empty3(( ))
+A---B
+A---C
+C---empty1
+C---E
+empty1---empty2
+empty1---empty3
+E---D
+E---F
+
+%% 这里用了empty2，empty3，不然可能会导致叶子结点左右顺序错误
+linkStyle 2 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+linkStyle 4 stroke:transparent
+style empty2 stroke:transparent,fill:transparent
+linkStyle 5 stroke:transparent
+style empty3 stroke:transparent,fill:transparent
+```
+
+**后左旋(18-20结点)**
+```mermaid
+graph TD
+A((20))
+B((18))
+C((22))
+D((14))
+E((21))
+F((24))
+empty1(( ))
+A---B
+A---C
+B---D
+B---empty1
+C---E
+C---F
+
+linkStyle 3 stroke:transparent
+style empty1 stroke:transparent,fill:transparent
+
+```

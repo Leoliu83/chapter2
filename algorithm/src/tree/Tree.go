@@ -48,7 +48,7 @@ func (tree *Tree) Init(root *TreeNode, maxLv int) {
 }
 
 /*
-	初始化树
+	初始化样例树
 */
 func (tree *Tree) CreateSampleTree(root *TreeNode, lv int) {
 	if lv >= tree.maxLevel {
